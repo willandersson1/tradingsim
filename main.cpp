@@ -4,7 +4,7 @@
 
 // TODO: These should be marked as global or w/e, and then as extern when
 // the structs are move to diff files.
-const int days = 252; // equal to the # rows in each csv doc
+const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
 const int portfolio_size = 10;
 const int market_size = 5;
 
@@ -21,14 +21,15 @@ struct stock {
 };
 
 struct market {
-    stock *stocks [market_size];
+    stock stocks [market_size];
+    // TODO: this doesn't actually make much sense. Not weigted by # shares.
     double total_value;
-    double update_total_vaule() {
+    void update_total_value() {
         double sum = 0.0;
-        for (stock *s : stocks) {
-            sum += s -> curr_price;
+        for (stock s : stocks) {
+            sum += s.curr_price;
         }
-        return sum;
+        total_value = sum;
     }
 };
 
@@ -47,12 +48,21 @@ struct portfolio {
 };
 
 void readData(market *);
-
+#include <chrono>
 int main() {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
     // Initialise
     // Stocks, initial market value, initial empty portfolio, ...
     struct market market;
     readData(&market);
+    market.update_total_value();
+    
+    for (int i = 0; i < market_size; i++) {
+        float p = market.stocks[i].initial_price;
+        std::cout << p << std::endl;
+    }
+    std::cout << market.total_value << std::endl;
 
     // Let one day go by
 
@@ -60,6 +70,10 @@ int main() {
         // Analyse all stocks
         
         // and add to portfolio those with highest rating
+
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 }
 
 #include <fstream>
@@ -96,18 +110,19 @@ std::vector<std::string> get_file_names() {
 void readData(market *market) {
     std::vector<std::string> file_names = get_file_names();
     
+    int stock_idx = 0;
     for (std::string file_name : file_names) {
         // Only do adjusted close for now.
-        std::ifstream file("market_data/AMD.csv");
-        std::string line;
+        std::ifstream file("market_data/" + file_name);
 
         if (!file.is_open()) {
-            std::cerr << "File couldn't be opened" << std::endl;
+            std::cerr << "File " + file_name + "couldn't be opened" << std::endl;
         }
 
         // Prepare to read data
         stock curr;
-        curr.ticker = "AMD";
+        curr.ticker = file_name.substr(0, file_name.length() - 4); // Need to cut the .CSV off
+        std::string line;
 
         // Ignore the first line
         std::getline(file, line);
@@ -125,9 +140,7 @@ void readData(market *market) {
                     curr.prices[i] = val;
                     i++;
                 }
-                
 
-                //result.at(col).second.push_back(val);
                 // ignore commas
                 if (ss.peek() == ',') {
                     ss.ignore();
@@ -138,9 +151,11 @@ void readData(market *market) {
 
         }
 
-        file.close();
-
         // Finalise
-        market -> stocks[0] = &curr;
+        file.close();
+        curr.initial_price = curr.prices[0];
+        curr.curr_price = curr.initial_price;
+        market -> stocks[stock_idx] = curr;
+        stock_idx++;
     }
 }
