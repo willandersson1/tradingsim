@@ -10,6 +10,7 @@ const int market_size = 5;
 
 struct stock {
     std::string ticker;
+    int id;
     float curr_price;
     float prices [days];
     float initial_price;
@@ -17,12 +18,12 @@ struct stock {
     float ma_7days;
     float ma_14days;
     float ma_30days;
-    float rating;
+    float tmr_price_est;
 };
 
 struct market {
     stock stocks [market_size];
-    // TODO: this doesn't actually make much sense. Not weigted by # shares.
+    // TODO: this doesn't actually make much sense. Not weigted by # shares. Do by avg % gain?
     double total_value;
     void update_total_value() {
         double sum = 0.0;
@@ -35,19 +36,22 @@ struct market {
 
 struct holding {
     stock *stock_ptr;
-    unsigned int quantity;
     float buy_price;
     float sell_price;
+    float tmr_price_est;
 };
 
 struct portfolio {
     float cash;
     float holdings_value;
-    std::vector<holding> curr_holdings;
+    std::vector<holding> curr_holdings; // TODO: should be pointers to this?
     std::vector<holding> past_holdings;
 };
 
 void readData(market *);
+void update(int day, market *market, portfolio *portfolio);
+void predict(int day, market *market, std::vector<holding> *curr_holdings);
+
 #include <chrono>
 int main() {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -58,22 +62,59 @@ int main() {
     readData(&market);
     market.update_total_value();
     
-    for (int i = 0; i < market_size; i++) {
-        float p = market.stocks[i].initial_price;
-        std::cout << p << std::endl;
-    }
-    std::cout << market.total_value << std::endl;
+    struct portfolio portfolio;
+    portfolio.cash = 10000;
 
     // Let one day go by
+    // TODO: roll this into the update formula.
+    int day = 1;
+    for (stock s : market.stocks) {
+        s.curr_price = s.prices[1];
+        s.ma_2days = (s.prices[0] + s.prices[0])/2;
+        s.ma_7days, s.ma_14days, s.ma_30days = s.ma_2days;
+    }
+    day++;
 
     // Loop over all days,
+    while (day < days) {
+        // Update price to current day's, as well as MAs and totals.
+        update(day, &market, &portfolio);
+
+        // Analyse all stocks in the market, as well as in portfolio, 
+        // and predict their price (ie profit if held for today) tomorrow.
+        // Currently, since no transaction feeds, there's no point analysing 
+        // portfolio: it's the same as selling and buying same day for same price.
+        predict(day, &market, &(portfolio.curr_holdings));
+
+        // Implement an algorithm for the knapsack problem to find the optimal 
+        // strategy for tomorrow.
+        // Weight: the stock price (negative if sell from portfolio)
+        // Value: the predicted upside tomorrow
+        // Max weight: current free cash
+
+        day++;
+    }
         // Analyse all stocks
         
         // and add to portfolio those with highest rating
 
-            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+
+
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+}
+
+void update(int day, market *market, portfolio *portfolio) {
+    // Update stocks (prices, MA)
+
+    // Update portfolio value
+}
+
+void predict(int day, market *market, std::vector<holding> *curr_holdings) {
+    // First, update the MAs
 }
 
 #include <fstream>
@@ -107,12 +148,12 @@ std::vector<std::string> get_file_names() {
     return file_names;
 }
 
+// Only read the adjusted close data for now.
 void readData(market *market) {
     std::vector<std::string> file_names = get_file_names();
     
     int stock_idx = 0;
     for (std::string file_name : file_names) {
-        // Only do adjusted close for now.
         std::ifstream file("market_data/" + file_name);
 
         if (!file.is_open()) {
@@ -122,26 +163,27 @@ void readData(market *market) {
         // Prepare to read data
         stock curr;
         curr.ticker = file_name.substr(0, file_name.length() - 4); // Need to cut the .CSV off
+        curr.id = stock_idx;
         std::string line;
 
         // Ignore the first line
         std::getline(file, line);
 
         // Read the rest of the lines
-        // Note that adjusted volume is column 6 (so 5 when 0 indexed)
+        // Note that adjusted volume is column 5 (0-indexed)
         float val;
-        int i = 0;
+        int day_idx = 0;
         while (std::getline(file, line)) {
             std::stringstream ss(line);
 
             int col = 0;
             while (ss >> val) {
                 if (col == 5) {
-                    curr.prices[i] = val;
-                    i++;
+                    curr.prices[day_idx] = val;
+                    day_idx++;
                 }
 
-                // ignore commas
+                // Ignore commas
                 if (ss.peek() == ',') {
                     ss.ignore();
                 }
@@ -155,6 +197,7 @@ void readData(market *market) {
         file.close();
         curr.initial_price = curr.prices[0];
         curr.curr_price = curr.initial_price;
+        curr.ma_2days, curr.ma_7days, curr.ma_14days, curr.ma_30days = curr.initial_price;
         market -> stocks[stock_idx] = curr;
         stock_idx++;
     }
