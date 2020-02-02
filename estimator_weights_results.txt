@@ -1,15 +1,53 @@
+Range: [-10, 10]
 Granularity: 10
-Lowest err: 10
-Weights: 10
+Lowest err: 67448.8
+Weights: 
 3
 -3
 2
 -2
 
+Range: [-4, 4]
+Granularity: 10
+Lowest err: 40802.6
+Weights: 
+1.2
+0
+0
+-0.8
+
+Range: [-10, 10]
 Granularity: 11
-Lowest err: 11
-Weights: 11
+Lowest err: 80984.9
+Weights: 
 2.72727
 -1.81818
 0
 -0.909091
+
+Range: [-4, 4]
+Granularity: 11
+Lowest err: 42968
+Weights: 
+1.45455
+-0.363636
+0
+-0.727273
+
+Range: [-4, 4]
+Granularity: 12
+Lowest err: 33214.8
+Weights: 
+1.66667
+-1
+0.666667
+-1
+
+Range: [-2.5, 2.5]
+Granularity: 13
+Lowest err: 31043.5
+Weights: 
+0.769231
+0.192308
+0
+-0.384615
