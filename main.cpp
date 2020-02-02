@@ -5,7 +5,7 @@
 // TODO: These should be marked as global or w/e, and then as extern when
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-const int portfolio_size = 10;
+const int portfolio_size = 10; // TODO: put find this by counting # files
 const int market_size = 5;
 
 struct stock {
@@ -23,7 +23,7 @@ struct stock {
 
 struct market {
     stock stocks [market_size];
-    // TODO: this doesn't actually make much sense. Not weigted by # shares. Do by avg % gain?
+    // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
     double total_value;
     void update_total_value() {
         double sum = 0.0;
