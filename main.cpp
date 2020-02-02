@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <math.h>
 
 // TODO: These should be marked as global or w/e, and then as extern when
 // the structs are move to diff files.
@@ -65,11 +66,11 @@ int main() {
     portfolio.cash = 10000;
 
     // Let one day go by
-    // TODO: roll this into the update formula.
+    // TODO: roll this into the update function.
     int day = 1;
     for (stock s : market.stocks) {
         s.curr_price = s.prices[1];
-        s.ma_2days = (s.prices[0] + s.prices[0])/2;
+        s.ma_2days = (s.prices[0] + s.prices[day])/2;
         s.ma_7days, s.ma_14days, s.ma_30days = s.ma_2days;
     }
     day++;
@@ -80,21 +81,57 @@ int main() {
         update(day, &market, &portfolio);
 
         // Analyse all stocks in the market.
-        // Currently, since no transaction feeds, there's no point analysing 
-        // portfolio: it's the same as selling and buying same day for same price.
         predict(day, &market);
 
-        // Implement an algorithm for the knapsack problem to find the optimal 
-        // strategy for tomorrow.
-        // Weight: the stock price (negative if sell from portfolio)
-        // Value: the predicted upside tomorrow
-        // Max weight: current free cash
+        // TODO: could optimise this using an optimising algorithm
+        // To find the optimal choice of stocks, we implement a solution for the knapsack 
+        // problem. But first we need to determine and initialise the weights, values, and 
+        // max weight as follows... 
+
+        // Note - this is simplified hugely by considering no transaction fees, so that 
+        // current portfolio holdings can be sold each new day without loss. Otherwise
+        // would need to model them as items with negative weight and adjust the algo.
+
+        // Weight capacity:
+        // The sum of all cash and current holdings
+        float capacity = portfolio.cash;
+        for (holding h : portfolio.curr_holdings) {
+            capacity += h.stock_ptr -> curr_price;
+        }
+
+        // Number of items: enough copies of each stock so that max capacity is less than
+        // quantity * curr_price of the stock
+        int num_items;
+        int copies [market_size];
+        for (stock s : market.stocks) {
+            copies[s.id] = (int) (std::ceil(capacity/s.curr_price));
+
+            num_items += copies[s.id];
+        }
+
+        // Weight: the stock price. 
+        // Values: the predicted gain tomorrow.
+        // Both values need to be rounded up to integer values.
+        int weights [num_items];
+        int values [num_items];
+        for (stock s : market.stocks) {
+            int price = (int) std::ceil(s.curr_price);
+            int tmr_price_prediction = (int) std::ceil(s.tmr_price_est);
+            int predicted_gain = price - tmr_price_prediction;
+
+            for (int n = 0; n < copies[s.id]; n++) {
+                weights[s.id + n] = price;
+                values[s.id + n] = predicted_gain;
+            }
+        }
+
+        // TODO: remember to account for the difference btwn integer value and true value when buying!
+        // Add to cash, then do a second round maybe?
+
+        
 
         day++;
     }
-        // Analyse all stocks
-        
-        // and add to portfolio those with highest rating
 
 
 
