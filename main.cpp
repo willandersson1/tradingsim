@@ -38,7 +38,6 @@ struct holding {
     stock *stock_ptr;
     float buy_price;
     float sell_price;
-    float tmr_price_est;
 };
 
 struct portfolio {
@@ -50,7 +49,7 @@ struct portfolio {
 
 void readData(market *);
 void update(int day, market *market, portfolio *portfolio);
-void predict(int day, market *market, std::vector<holding> *curr_holdings);
+void predict(int day, market *market);
 
 #include <chrono>
 int main() {
@@ -80,11 +79,10 @@ int main() {
         // Update price to current day's, as well as MAs and totals.
         update(day, &market, &portfolio);
 
-        // Analyse all stocks in the market, as well as in portfolio, 
-        // and predict their price (ie profit if held for today) tomorrow.
+        // Analyse all stocks in the market.
         // Currently, since no transaction feeds, there's no point analysing 
         // portfolio: it's the same as selling and buying same day for same price.
-        predict(day, &market, &(portfolio.curr_holdings));
+        predict(day, &market);
 
         // Implement an algorithm for the knapsack problem to find the optimal 
         // strategy for tomorrow.
@@ -109,12 +107,64 @@ int main() {
 
 void update(int day, market *market, portfolio *portfolio) {
     // Update stocks (prices, MA)
+    for (stock s : market -> stocks) {
+        s.curr_price = s.prices[day];
+        
+        // Update moving averages efficiently
+        float old_price;
+        float new_price = s.curr_price;
+        
+        old_price = s.prices[day - 2];
+        s.ma_2days = ((2 * s.ma_2days) - old_price + new_price)/2;
+
+        // In these cases have to check if we have to remove a value, or just calculate the
+        // mean of all prices until now.
+        if (day > 7 - 1) {
+            old_price = s.prices[day - 7];
+            s.ma_7days = ((7 * s.ma_7days) - old_price + new_price)/7;
+        }
+
+        else {
+            s.ma_7days = ((day * s.ma_7days) + new_price)/(day + 1);
+        }
+
+        if (day > 14 - 1) {
+            old_price = s.prices[day - 14];
+            s.ma_14days = ((14 * s.ma_14days) - old_price + new_price)/14;
+        }
+
+        else {
+            s.ma_14days = ((day * s.ma_14days) + new_price)/(day + 1);
+        }
+
+        if (day > 30 - 1) {
+            old_price = s.prices[day - 30];
+            s.ma_14days = ((30 * s.ma_14days) - old_price + new_price)/30;
+        }
+
+        else {
+            s.ma_30days = ((day * s.ma_30days) + new_price)/(day + 1);
+        }
+    }
 
     // Update portfolio value
+    float sum;
+    for (holding h : portfolio -> curr_holdings) {
+        sum += h.stock_ptr -> curr_price;
+    }
+    portfolio -> holdings_value = sum;
 }
 
-void predict(int day, market *market, std::vector<holding> *curr_holdings) {
-    // First, update the MAs
+void predict(int day, market *market) {
+    // We now have updated MAs and can use it to predict the value of each stock 
+    // (and holding in portfolio) the next day
+
+    // Declare the coefficients for ma_2day, ma_7day, ... respectively.
+    float weights [4] = {0.769231, 0.192308, 0, -0.384615};
+    for (stock s : market -> stocks) {
+        s.tmr_price_est = weights[0] * s.ma_2days + weights[1] * s.ma_7days
+                        + weights[2] * s.ma_14days + weights[3] * s.ma_30days;
+    }
 }
 
 #include <fstream>
@@ -190,7 +240,6 @@ void readData(market *market) {
 
                 col++;
             }
-
         }
 
         // Finalise
