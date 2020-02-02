@@ -1,0 +1,15 @@
+Granularity: 10
+Lowest err: 10
+Weights: 10
+3
+-3
+2
+-2
+
+Granularity: 11
+Lowest err: 11
+Weights: 11
+2.72727
+-1.81818
+0
+-0.909091
