@@ -51,6 +51,7 @@ struct portfolio {
 void readData(market *);
 void update(int day, market *market, portfolio *portfolio);
 void predict(int day, market *market);
+std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []);
 
 #include <chrono>
 int main() {
@@ -93,11 +94,13 @@ int main() {
         // would need to model them as items with negative weight and adjust the algo.
 
         // Weight capacity:
-        // The sum of all cash and current holdings
-        float capacity = portfolio.cash;
+        // The sum of all cash and current holdings. Round down.
+        int capacity;
+        float temp = portfolio.cash;
         for (holding h : portfolio.curr_holdings) {
-            capacity += h.stock_ptr -> curr_price;
+            temp += h.stock_ptr -> curr_price;
         }
+        capacity = (int) std::floor(temp);
 
         // Number of items: enough copies of each stock so that max capacity is less than
         // quantity * curr_price of the stock
@@ -124,6 +127,8 @@ int main() {
                 values[s.id + n] = predicted_gain;
             }
         }
+        
+        std::vector<int> recommended_stocks = knapsack_solve(capacity, num_items, weights, values);
 
         // TODO: remember to account for the difference btwn integer value and true value when buying!
         // Add to cash, then do a second round maybe?
@@ -140,6 +145,75 @@ int main() {
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+}
+
+std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []) {
+    // Solve using DP, keep track of additional items used as well.
+    // DP table is capacity + 1 columns, and n rows. 
+    // DP[i][w] is the max value of the first i items, with weight limit w.
+    // We find the solution in DP[n - 1][capacity].
+    std::cout << "capacity: " << capacity << std::endl;
+    std::cout << "n: " << n << std::endl; // TODO: Doesn't work for these array sizes (10mill elems => 4gb arrays or so)
+    int DP [n][capacity + 1];
+    // A matrix of the same size tracks which new item is added to the knapsack
+    // at each stage. This can then be used to reconstruct the exact items
+    // used.
+    // item_added[i][j] = k <=> item k was added to the knapsack at DP[i][j]. 
+    // Set to -1 else.
+    int item_added [n][capacity + 1];
+    std::vector<int> knapsack;
+
+    // Initialise:
+    // Each cell in the first row is values[0] iff i > weights[i]. 
+    // ie, DP[0][i] = values[0] <=> weights[0] <= i, else 0.
+    for (int w = 0; w <= capacity; w++) {
+        if (weights[0] <= w) {
+            DP[0][w] = values[0];
+            item_added[0][w] = 0;
+        }
+
+        else {
+            DP[0][w] = 0;
+            item_added[0][w] = -1;
+        }
+    }
+    
+
+    // Fill out the rest of the table, row by row. 
+    for (int i = 1; i < n; i++) {
+        for (int w = 0; w <= capacity; w++) {
+            // Either keep the same set of items
+            int same_set_value = DP[i - 1][w];
+
+            // or add the i-th item to the set.
+            int with_new_item = values[i] + DP[i - 1][w - weights[i]];
+
+            // Choose the one that gives the greatest value.
+            if (with_new_item > same_set_value) {
+                DP[i][w] = with_new_item;
+                item_added[i][w] = i;
+            }
+
+            else {
+                DP[i][w] = same_set_value;
+                item_added[i][w] = -1;
+            }
+        }
+    }
+
+    
+
+    int w = capacity;
+    for (int i = n - 1; i >= 0; i--) {
+        if (item_added[i][w] != -1) {
+            // If an item was added here, add it to the list 
+            // and account for its weight to continue the search.
+            knapsack.push_back(item_added[i][w]);
+            w -= weights[item_added[i][w]];
+        }
+    }
+
+    return knapsack;
 }
 
 void update(int day, market *market, portfolio *portfolio) {
