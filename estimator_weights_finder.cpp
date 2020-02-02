@@ -72,8 +72,8 @@ int main() {
     };
 
     // Define the range of possible parameters for est
-    int granularity = 11;
-    double start = -10;
+    int granularity = 13;
+    double start = -2.5;
     double mid = 0.0;
     double end = -start;
     double increment = end/granularity;
@@ -126,9 +126,10 @@ int main() {
     }
 
     std::cout << "\n\n\n" << std::endl;
+    std::cout << "Range: [" << start << ", " << end << "]" << std::endl;
     std::cout << "Granularity: " << granularity << std::endl;
-    std::cout << "Lowest err: " << granularity << std::endl;
-    std::cout << "Weights: " << granularity << std::endl;
+    std::cout << "Lowest err: " << lowest_err << std::endl;
+    std::cout << "Weights: " << std::endl;
     for (double w : best_weights) {
         std::cout << w << std::endl;
     }
