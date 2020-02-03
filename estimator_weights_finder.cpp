@@ -111,6 +111,11 @@ int main() {
 
                     for (int i = 0; i < days; i++) {
                         curr_err += std::abs(prices[i + 1] - est(i, w1, w2, w3, w4));
+
+                        // Slight optimisation
+                        if (curr_err > lowest_err) {
+                            break;
+                        }
                     }
 
                     if (curr_err < lowest_err) {
