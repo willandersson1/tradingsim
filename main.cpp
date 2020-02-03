@@ -64,15 +64,19 @@ int main() {
     market.update_total_value();
     
     struct portfolio portfolio;
-    portfolio.cash = 10000;
+    portfolio.cash = 10;
 
     // Let one day go by
     // TODO: roll this into the update function.
+    // TODO: debug. Doesn't seem to be saving the updated versions to the stock object properly.
+    // Maybe pointer issues?
     int day = 1;
     for (stock s : market.stocks) {
-        s.curr_price = s.prices[1];
-        s.ma_2days = (s.prices[0] + s.prices[day])/2;
-        s.ma_7days, s.ma_14days, s.ma_30days = s.ma_2days;
+        s.curr_price = s.prices[day];
+        s.ma_2days = (s.prices[0] + s.curr_price)/2;
+        s.ma_7days = s.ma_2days;
+        s.ma_14days = s.ma_2days;
+        s.ma_30days = s.ma_2days;
     }
     day++;
 
@@ -120,7 +124,7 @@ int main() {
         for (stock s : market.stocks) {
             int price = (int) std::ceil(s.curr_price);
             int tmr_price_prediction = (int) std::ceil(s.tmr_price_est);
-            int predicted_gain = price - tmr_price_prediction;
+            int predicted_gain = tmr_price_prediction - price;
 
             for (int n = 0; n < copies[s.id]; n++) {
                 weights[s.id + n] = price;
@@ -155,12 +159,14 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     std::cout << "capacity: " << capacity << std::endl;
     std::cout << "n: " << n << std::endl; // TODO: Doesn't work for these array sizes (10mill elems => 4gb arrays or so)
     int DP [n][capacity + 1];
+    std::cout << "Allocated DP matrix" << std::endl;
     // A matrix of the same size tracks which new item is added to the knapsack
     // at each stage. This can then be used to reconstruct the exact items
     // used.
     // item_added[i][j] = k <=> item k was added to the knapsack at DP[i][j]. 
     // Set to -1 else.
     int item_added [n][capacity + 1];
+    std::cout << "Allocated item added matrix" << std::endl;
     std::vector<int> knapsack;
 
     // Initialise:
@@ -186,7 +192,7 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
             int same_set_value = DP[i - 1][w];
 
             // or add the i-th item to the set.
-            int with_new_item = values[i] + DP[i - 1][w - weights[i]];
+            int with_new_item = values[i] + DP[i - 1][w - weights[i]]; // todo: I think this goes out of bounds
 
             // Choose the one that gives the greatest value.
             if (with_new_item > same_set_value) {
@@ -202,14 +208,17 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     }
 
     
-
+    // Backtracking
+    // Todo: debug. Weights are weird.
     int w = capacity;
     for (int i = n - 1; i >= 0; i--) {
-        if (item_added[i][w] != -1) {
+        int item_id = item_added[i][w];
+
+        if (item_id != -1) {
             // If an item was added here, add it to the list 
             // and account for its weight to continue the search.
-            knapsack.push_back(item_added[i][w]);
-            w -= weights[item_added[i][w]];
+            knapsack.push_back(item_id);
+            w -= weights[weights[item_id]];
         }
     }
 
@@ -266,6 +275,7 @@ void update(int day, market *market, portfolio *portfolio) {
     portfolio -> holdings_value = sum;
 }
 
+// TODO: debug. Estimates are all huge numbers (~10^35).
 void predict(int day, market *market) {
     // We now have updated MAs and can use it to predict the value of each stock 
     // (and holding in portfolio) the next day
@@ -273,8 +283,12 @@ void predict(int day, market *market) {
     // Declare the coefficients for ma_2day, ma_7day, ... respectively.
     float weights [4] = {0.769231, 0.192308, 0, -0.384615};
     for (stock s : market -> stocks) {
+        std::cout << "Old estimate for " << s.ticker << " @ " << s.curr_price << ": " << s.tmr_price_est << std::endl;
+        
         s.tmr_price_est = weights[0] * s.ma_2days + weights[1] * s.ma_7days
                         + weights[2] * s.ma_14days + weights[3] * s.ma_30days;
+
+        std::cout << "New estimate for " << s.ticker << " @ " << s.curr_price << ": " << s.tmr_price_est << std::endl;
     }
 }
 
