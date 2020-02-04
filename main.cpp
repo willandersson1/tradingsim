@@ -6,8 +6,7 @@
 // TODO: These should be marked as global or w/e, and then as extern when
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-const int portfolio_size = 10; // TODO: put find this by counting # files
-const int market_size = 5;
+const int market_size = 5; // TODO: calculate this by counting files
 
 struct stock {
     std::string ticker;
@@ -51,6 +50,7 @@ struct portfolio {
 void readData(market *);
 void update(int day, market *market, portfolio *portfolio);
 void predict(int day, market *market);
+void cheat_predict(int day, market *market);
 std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []);
 void printArr(int n, int A []);
 void printMat(int m, int n, int *A);
@@ -83,14 +83,24 @@ int main() {
     day++;
 
     // Loop over all days,
-    while (day < days) {
+    while (day < days - 2) {
+        // std::cout << "SOD cash: " << portfolio.cash << std::endl;
+
         // Update price to current day's, as well as MAs and totals.
         update(day, &market, &portfolio);
 
         // Analyse all stocks in the market.
-        predict(day, &market);
+        // predict(day, &market);
+        cheat_predict(day, &market);
 
-        // TODO: add all curr holdings to past holdings
+        // Sell all current holdings, storing them in past holdings.
+        for (holding h : portfolio.curr_holdings) {
+            float value = h.stock_ptr -> curr_price;
+            portfolio.cash += value;
+            h.sell_price = value;
+            portfolio.past_holdings.push_back(h);
+        }
+        portfolio.curr_holdings = {};
 
         // TODO: could optimise this using an optimising algorithm
         // To find the optimal choice of stocks, we implement a solution for the knapsack 
@@ -149,15 +159,27 @@ int main() {
             }
         }
 
-        std::vector<stock *> recommended_stocks;
         std::vector<int> item_nums = knapsack_solve(capacity, num_items, weights, values);
 
+        // Buy all the recommended stocks
+        for (int item_num : item_nums) {
+            int s_id = ids[item_num];
+            stock *s_p = &(market.stocks[s_id]);
+            float price = s_p -> curr_price;
 
-        // TODO: remember to account for the difference btwn integer value and true value when buying!
-        // Add to cash, then do a second round maybe?
+            portfolio.cash -= price;
+            holding temp;
+            temp.stock_ptr = s_p;
+            temp.buy_price = price;
+            portfolio.curr_holdings.push_back(temp);
+        }
+
+        std::cout << "EOD cash: " << portfolio.cash << std::endl;
 
         day++;
     }
+
+    // TODO: tally up cash after end of final day, ie the above loop should go to days - 1
 
 
 
@@ -325,6 +347,15 @@ void predict(int day, market *market) {
 
         s_p -> tmr_price_est = weights[0] * s_p -> ma_2days + weights[1] * s_p -> ma_7days
                         + weights[2] * s_p -> ma_14days + weights[3] * s_p -> ma_30days;
+    }
+}
+
+void cheat_predict(int day, market *market) {
+    // Cheat by looking at the next day for a perfect prediction
+    for (int i = 0; i < market_size; i++) {
+        stock *s_p = &(market -> stocks[i]);
+
+        s_p -> tmr_price_est = s_p -> prices[day + 1];
     }
 }
 
