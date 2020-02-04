@@ -147,7 +147,6 @@ int main() {
 
 
 
-
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
@@ -176,17 +175,7 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // DP table is capacity + 1 columns, and n rows. 
     // DP[i][w] is the max value of the first i items, with weight limit w.
     // We find the solution in DP[n - 1][capacity].
-    std::cout << "capacity: " << capacity << std::endl;
-    std::cout << "n: " << n << std::endl; // TODO: Doesn't work for these array sizes (10mill elems => 4gb arrays or so)
-    std::cout << "Weights:" << std::endl;
-    printArr(n, weights);
-
-    std::cout << "Values:" << std::endl;
-    printArr(n, values);
-    
-    
     int DP [n][capacity + 1];
-    std::cout << "Allocated DP matrix" << std::endl;
 
     // A matrix of the same size tracks which new item is added to the knapsack
     // at each stage. This can then be used to reconstruct the exact items
@@ -194,7 +183,6 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // item_added[i][j] = k <=> item k was added to the knapsack at DP[i][j]. 
     // Set to -1 else.
     int item_added [n][capacity + 1];
-    std::cout << "Allocated item added matrix" << std::endl;
     std::vector<int> knapsack;
 
     // Initialise:
@@ -241,15 +229,7 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
         }
     }
 
-    std::cout << "\nFinal DP table" << std::endl;
-    printMat(n, capacity + 1, &DP[0][0]);
-
-    std::cout << "\nFinal items table" << std::endl;
-    printMat(n, capacity + 1, &item_added[0][0]);
-
-    
     // Backtracking
-    // Todo: debug. Weights are weird.
     int w = capacity;
     for (int i = n - 1; i >= 0; i--) {
         int item_id = item_added[i][w];
