@@ -52,6 +52,8 @@ void readData(market *);
 void update(int day, market *market, portfolio *portfolio);
 void predict(int day, market *market);
 std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []);
+void printArr(int n, int A []);
+void printMat(int m, int n, int *A);
 
 #include <chrono>
 int main() {
@@ -110,7 +112,7 @@ int main() {
 
         // Number of items: enough copies of each stock so that max capacity is less than
         // quantity * curr_price of the stock
-        int num_items;
+        int num_items = 0;
         int copies [market_size];
         for (stock s : market.stocks) {
             copies[s.id] = (int) (std::ceil(capacity/s.curr_price));
@@ -138,8 +140,6 @@ int main() {
 
         // TODO: remember to account for the difference btwn integer value and true value when buying!
         // Add to cash, then do a second round maybe?
-
-        
 
         day++;
     }
