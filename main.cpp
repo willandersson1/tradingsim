@@ -88,6 +88,8 @@ int main() {
         // Analyse all stocks in the market.
         predict(day, &market);
 
+        // TODO: add all curr holdings to past holdings
+
         // TODO: could optimise this using an optimising algorithm
         // To find the optimal choice of stocks, we implement a solution for the knapsack 
         // problem. But first we need to determine and initialise the weights, values, and 
@@ -131,7 +133,7 @@ int main() {
                 values[s.id + n] = predicted_gain;
             }
         }
-        
+
         std::vector<int> recommended_stocks = knapsack_solve(capacity, num_items, weights, values);
 
         // TODO: remember to account for the difference btwn integer value and true value when buying!
@@ -151,6 +153,24 @@ int main() {
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 }
 
+void printArr(int n, int A []) {
+    for (int i = 0; i < n - 1; i++) {
+        std::cout << A[i] << "  ";
+    }
+
+    std::cout << A[n - 1] << std::endl;
+}
+
+void printMat(int m, int n, int *A) {
+    for (int i = 0; i < m; i++) {
+        for (int j = 0; j < n - 1; j++) {
+            std::cout << A[j + i * n] << "  ";
+        }
+
+        std::cout << A[n - 1 + i * n] << std::endl;
+    }
+}
+
 std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []) {
     // Solve using DP, keep track of additional items used as well.
     // DP table is capacity + 1 columns, and n rows. 
@@ -158,8 +178,16 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // We find the solution in DP[n - 1][capacity].
     std::cout << "capacity: " << capacity << std::endl;
     std::cout << "n: " << n << std::endl; // TODO: Doesn't work for these array sizes (10mill elems => 4gb arrays or so)
+    std::cout << "Weights:" << std::endl;
+    printArr(n, weights);
+
+    std::cout << "Values:" << std::endl;
+    printArr(n, values);
+    
+    
     int DP [n][capacity + 1];
     std::cout << "Allocated DP matrix" << std::endl;
+
     // A matrix of the same size tracks which new item is added to the knapsack
     // at each stage. This can then be used to reconstruct the exact items
     // used.
@@ -173,7 +201,7 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // Each cell in the first row is values[0] iff i > weights[i]. 
     // ie, DP[0][i] = values[0] <=> weights[0] <= i, else 0.
     for (int w = 0; w <= capacity; w++) {
-        if (weights[0] <= w) {
+        if (weights[0] <= w && values[0] > 0) {
             DP[0][w] = values[0];
             item_added[0][w] = 0;
         }
@@ -183,7 +211,6 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
             item_added[0][w] = -1;
         }
     }
-    
 
     // Fill out the rest of the table, row by row. 
     for (int i = 1; i < n; i++) {
@@ -191,8 +218,15 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
             // Either keep the same set of items
             int same_set_value = DP[i - 1][w];
 
-            // or add the i-th item to the set.
-            int with_new_item = values[i] + DP[i - 1][w - weights[i]]; // todo: I think this goes out of bounds
+            // or add the i-th item to the set, if it doesn't weigh too much.
+            int with_new_item;
+            if (w - weights[i] < 0) {
+                with_new_item = -1;
+            }
+
+            else {
+                with_new_item = values[i] + DP[i - 1][w - weights[i]];
+            }
 
             // Choose the one that gives the greatest value.
             if (with_new_item > same_set_value) {
@@ -207,6 +241,12 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
         }
     }
 
+    std::cout << "\nFinal DP table" << std::endl;
+    printMat(n, capacity + 1, &DP[0][0]);
+
+    std::cout << "\nFinal items table" << std::endl;
+    printMat(n, capacity + 1, &item_added[0][0]);
+
     
     // Backtracking
     // Todo: debug. Weights are weird.
@@ -218,7 +258,7 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
             // If an item was added here, add it to the list 
             // and account for its weight to continue the search.
             knapsack.push_back(item_id);
-            w -= weights[weights[item_id]];
+            w -= weights[item_id];
         }
     }
 
@@ -276,20 +316,20 @@ void update(int day, market *market, portfolio *portfolio) {
     portfolio -> holdings_value = sum;
 }
 
-// TODO: debug. Estimates are all huge numbers (~10^35).
 void predict(int day, market *market) {
     // We now have updated MAs and can use it to predict the value of each stock 
     // (and holding in portfolio) the next day
 
     // Declare the coefficients for ma_2day, ma_7day, ... respectively.
-    float weights [4] = {0.769231, 0.192308, 0, -0.384615};
-    for (stock s : market -> stocks) {
-        std::cout << "Old estimate for " << s.ticker << " @ " << s.curr_price << ": " << s.tmr_price_est << std::endl;
-        
-        s.tmr_price_est = weights[0] * s.ma_2days + weights[1] * s.ma_7days
-                        + weights[2] * s.ma_14days + weights[3] * s.ma_30days;
+    // TODO: fix weights... this doesn't work: no positive gains are predicted!
+    // float weights [4] = {0.769231, 0.192308, 0, -0.384615};
+    float weights [4] = {0.25, 0.25, 0.25, 0.25};
 
-        std::cout << "New estimate for " << s.ticker << " @ " << s.curr_price << ": " << s.tmr_price_est << std::endl;
+    for (int i = 0; i < market_size; i++) {
+        stock *s_p = &(market -> stocks[i]);
+
+        s_p -> tmr_price_est = weights[0] * s_p -> ma_2days + weights[1] * s_p -> ma_7days
+                        + weights[2] * s_p -> ma_14days + weights[3] * s_p -> ma_30days;
     }
 }
 
