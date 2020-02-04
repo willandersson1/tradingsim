@@ -66,7 +66,7 @@ int main() {
     market.update_total_value();
     
     struct portfolio portfolio;
-    portfolio.cash = 10;
+    portfolio.cash = 100;
 
     // Let one day go by
     // TODO: roll this into the update function.
@@ -103,7 +103,7 @@ int main() {
 
         // Weight capacity:
         // The sum of all cash and current holdings. Round down.
-        int capacity;
+        int capacity = 0;
         float temp = portfolio.cash;
         for (holding h : portfolio.curr_holdings) {
             temp += h.stock_ptr -> curr_price;
@@ -113,11 +113,13 @@ int main() {
         // Number of items: enough copies of each stock so that max capacity is less than
         // quantity * curr_price of the stock
         int num_items = 0;
-        int copies [market_size];
-        for (stock s : market.stocks) {
-            copies[s.id] = (int) (std::ceil(capacity/s.curr_price));
+        int copies [market_size] = {0};
 
-            num_items += copies[s.id];
+        for (int i = 0; i < market_size; i++) {
+            stock *s_p = &(market.stocks[i]);
+            copies[s_p -> id] = (int) (std::ceil(capacity/(s_p -> curr_price)));
+
+            num_items += copies[s_p -> id];
         }
 
         // Weight: the stock price. 
@@ -136,7 +138,12 @@ int main() {
             }
         }
 
+        // std::cout << "Size of arrays is ~" << (2 * 4 * num_items * capacity) << "B" << std::endl;
         std::vector<int> recommended_stocks = knapsack_solve(capacity, num_items, weights, values);
+
+        for (int id : recommended_stocks) {
+            // std::cout << "Bought " << market.stocks[id].ticker << std::endl;
+        }
 
         // TODO: remember to account for the difference btwn integer value and true value when buying!
         // Add to cash, then do a second round maybe?
