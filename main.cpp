@@ -68,16 +68,16 @@ int main() {
 
     // Let one day go by
     // TODO: roll this into the update function.
-    // TODO: debug. Doesn't seem to be saving the updated versions to the stock object properly.
-    // Maybe pointer issues?
     int day = 1;
-    for (stock s : market.stocks) {
-        s.curr_price = s.prices[day];
-        s.ma_2days = (s.prices[0] + s.curr_price)/2;
-        s.ma_7days = s.ma_2days;
-        s.ma_14days = s.ma_2days;
-        s.ma_30days = s.ma_2days;
+    for (int i = 0; i < market_size; i++) {
+        stock *s_p = &market.stocks[i];
+        s_p -> curr_price = s_p -> prices[day];
+        s_p -> ma_2days   = (s_p -> prices[0] + s_p -> curr_price) / 2;
+        s_p -> ma_7days   = s_p -> ma_2days;
+        s_p -> ma_14days  = s_p -> ma_2days;
+        s_p -> ma_30days  = s_p -> ma_2days;
     }
+
     day++;
 
     // Loop over all days,
@@ -227,48 +227,49 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
 
 void update(int day, market *market, portfolio *portfolio) {
     // Update stocks (prices, MA)
-    for (stock s : market -> stocks) {
-        s.curr_price = s.prices[day];
+    for (int i = 0; i < market_size; i++) {
+        stock *s_p = &(market -> stocks[i]);
+        s_p -> curr_price = s_p -> prices[day];
         
         // Update moving averages efficiently
         float old_price;
-        float new_price = s.curr_price;
+        float new_price = s_p -> curr_price;
         
-        old_price = s.prices[day - 2];
-        s.ma_2days = ((2 * s.ma_2days) - old_price + new_price)/2;
+        old_price = s_p -> prices[day - 2];
+        s_p -> ma_2days = ((2 * s_p -> ma_2days) - old_price + new_price)/2;
 
         // In these cases have to check if we have to remove a value, or just calculate the
         // mean of all prices until now.
         if (day > 7 - 1) {
-            old_price = s.prices[day - 7];
-            s.ma_7days = ((7 * s.ma_7days) - old_price + new_price)/7;
+            old_price = s_p -> prices[day - 7];
+            s_p -> ma_7days = ((7 * s_p -> ma_7days) - old_price + new_price)/7;
         }
 
         else {
-            s.ma_7days = ((day * s.ma_7days) + new_price)/(day + 1);
+            s_p -> ma_7days = ((day * s_p -> ma_7days) + new_price)/(day + 1);
         }
 
         if (day > 14 - 1) {
-            old_price = s.prices[day - 14];
-            s.ma_14days = ((14 * s.ma_14days) - old_price + new_price)/14;
+            old_price = s_p -> prices[day - 14];
+            s_p -> ma_14days = ((14 * s_p -> ma_14days) - old_price + new_price)/14;
         }
 
         else {
-            s.ma_14days = ((day * s.ma_14days) + new_price)/(day + 1);
+            s_p -> ma_14days = ((day * s_p -> ma_14days) + new_price)/(day + 1);
         }
 
         if (day > 30 - 1) {
-            old_price = s.prices[day - 30];
-            s.ma_14days = ((30 * s.ma_14days) - old_price + new_price)/30;
+            old_price = s_p -> prices[day - 30];
+            s_p -> ma_14days = ((30 * s_p -> ma_14days) - old_price + new_price)/30;
         }
 
         else {
-            s.ma_30days = ((day * s.ma_30days) + new_price)/(day + 1);
+            s_p -> ma_30days = ((day * s_p -> ma_30days) + new_price)/(day + 1);
         }
     }
 
     // Update portfolio value
-    float sum;
+    float sum = 0;
     for (holding h : portfolio -> curr_holdings) {
         sum += h.stock_ptr -> curr_price;
     }
