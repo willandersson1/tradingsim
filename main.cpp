@@ -66,7 +66,7 @@ int main() {
     market.update_total_value();
     
     struct portfolio portfolio;
-    portfolio.cash = 100;
+    portfolio.cash = 1000;
 
     // Let one day go by
     // TODO: roll this into the update function.
@@ -111,39 +111,47 @@ int main() {
         capacity = (int) std::floor(temp);
 
         // Number of items: enough copies of each stock so that max capacity is less than
-        // quantity * curr_price of the stock
+        // quantity * curr_price of the stock.
+        // copies: track the number of copies of each stock we store. 
         int num_items = 0;
         int copies [market_size] = {0};
 
         for (int i = 0; i < market_size; i++) {
             stock *s_p = &(market.stocks[i]);
-            copies[s_p -> id] = (int) (std::ceil(capacity/(s_p -> curr_price)));
+            int s_id = s_p -> id;
+            copies[s_id] = (int) (std::ceil(capacity/(s_p -> curr_price)));
 
-            num_items += copies[s_p -> id];
+            num_items += copies[s_id];
         }
-
+        
         // Weight: the stock price. 
         // Values: the predicted gain tomorrow.
         // Both values need to be rounded up to integer values.
+        // ids: the i-th element here gives the id of the stock represented in values/weights[i]
         int weights [num_items];
         int values [num_items];
-        for (stock s : market.stocks) {
-            int price = (int) std::ceil(s.curr_price);
-            int tmr_price_prediction = (int) std::ceil(s.tmr_price_est);
+        int ids [num_items];
+        int counter = 0;
+
+        for (int i = 0; i < market_size; i++) {
+            stock *s_p = &(market.stocks[i]);
+            int price = (int) std::ceil(s_p -> curr_price);
+            int tmr_price_prediction = (int) std::ceil(s_p -> tmr_price_est);
             int predicted_gain = tmr_price_prediction - price;
 
-            for (int n = 0; n < copies[s.id]; n++) {
-                weights[s.id + n] = price;
-                values[s.id + n] = predicted_gain;
+            int s_id = s_p -> id;
+            for (int n = 0; n < copies[s_id]; n++) {
+                weights[counter] = price;
+                values[counter] = predicted_gain;
+                ids[counter] = s_id;
+
+                counter++;
             }
         }
 
-        // std::cout << "Size of arrays is ~" << (2 * 4 * num_items * capacity) << "B" << std::endl;
-        std::vector<int> recommended_stocks = knapsack_solve(capacity, num_items, weights, values);
+        std::vector<stock *> recommended_stocks;
+        std::vector<int> item_nums = knapsack_solve(capacity, num_items, weights, values);
 
-        for (int id : recommended_stocks) {
-            // std::cout << "Bought " << market.stocks[id].ticker << std::endl;
-        }
 
         // TODO: remember to account for the difference btwn integer value and true value when buying!
         // Add to cash, then do a second round maybe?
@@ -239,13 +247,13 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // Backtracking
     int w = capacity;
     for (int i = n - 1; i >= 0; i--) {
-        int item_id = item_added[i][w];
+        int item_num = item_added[i][w];
 
-        if (item_id != -1) {
+        if (item_num != -1) {
             // If an item was added here, add it to the list 
             // and account for its weight to continue the search.
-            knapsack.push_back(item_id);
-            w -= weights[item_id];
+            knapsack.push_back(item_num);
+            w -= weights[item_num];
         }
     }
 
