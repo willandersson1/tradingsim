@@ -2,37 +2,15 @@
 #include <string>
 #include <vector>
 #include <math.h>
+#include "knapsack.h"
+#include "print_help.h"
+#include "market.h"
+#include "read_market_data.h"
 
 // TODO: These should be marked as global or w/e, and then as extern when
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
 const int market_size = 5; // TODO: calculate this by counting files
-
-struct stock {
-    std::string ticker;
-    int id;
-    float curr_price;
-    float prices [days];
-    float initial_price;
-    float ma_2days;
-    float ma_7days;
-    float ma_14days;
-    float ma_30days;
-    float tmr_price_est;
-};
-
-struct market {
-    stock stocks [market_size];
-    // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
-    double total_value;
-    void update_total_value() {
-        double sum = 0.0;
-        for (stock s : stocks) {
-            sum += s.curr_price;
-        }
-        total_value = sum;
-    }
-};
 
 struct holding {
     stock *stock_ptr;
@@ -47,18 +25,12 @@ struct portfolio {
     std::vector<holding> past_holdings;
 };
 
-void readData(market *);
 void update(int day, market *market, portfolio *portfolio);
 void predict(int day, market *market);
 void cheat_predict(int day, market *market);
-std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []);
-void printArr(int n, int A []);
-void printMat(int m, int n, int *A);
 
-#include <chrono>
+
 int main() {
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
     // Initialise
     // Stocks, initial market value, initial empty portfolio, ...
     struct market market;
@@ -71,14 +43,7 @@ int main() {
     // Let one day go by
     // TODO: roll this into the update function.
     int day = 1;
-    for (int i = 0; i < market_size; i++) {
-        stock *s_p = &market.stocks[i];
-        s_p -> curr_price = s_p -> prices[day];
-        s_p -> ma_2days   = (s_p -> prices[0] + s_p -> curr_price) / 2;
-        s_p -> ma_7days   = s_p -> ma_2days;
-        s_p -> ma_14days  = s_p -> ma_2days;
-        s_p -> ma_30days  = s_p -> ma_2days;
-    }
+    update(day, &market, &portfolio);
 
     day++;
 
@@ -183,122 +148,31 @@ int main() {
     portfolio.curr_holdings = {};
 
     std::cout << "After final day cash is " << portfolio.cash << std::endl;
-
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-}
-
-void printArr(int n, int A []) {
-    for (int i = 0; i < n - 1; i++) {
-        std::cout << A[i] << "  ";
-    }
-
-    std::cout << A[n - 1] << std::endl;
-}
-
-void printMat(int m, int n, int *A) {
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; j < n - 1; j++) {
-            std::cout << A[j + i * n] << "  ";
-        }
-
-        std::cout << A[n - 1 + i * n] << std::endl;
-    }
-}
-
-std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []) {
-    // Solve using DP, keep track of additional items used as well.
-    // DP table is capacity + 1 columns, and n rows. 
-    // DP[i][w] is the max value of the first i items, with weight limit w.
-    // We find the solution in DP[n - 1][capacity].
-    int DP [n][capacity + 1];
-
-    // A matrix of the same size tracks which new item is added to the knapsack
-    // at each stage. This can then be used to reconstruct the exact items
-    // used.
-    // item_added[i][j] = k <=> item k was added to the knapsack at DP[i][j]. 
-    // Set to -1 else.
-    // Todo: probably don't need a whole array like this, can use a vector or some pairs.
-    // ^ will reduce memory usage.
-    int item_added [n][capacity + 1];
-    std::vector<int> knapsack;
-
-    // Initialise:
-    // Each cell in the first row is values[0] iff i > weights[i]. 
-    // ie, DP[0][i] = values[0] <=> weights[0] <= i, else 0.
-    for (int w = 0; w <= capacity; w++) {
-        if (weights[0] <= w && values[0] > 0) {
-            DP[0][w] = values[0];
-            item_added[0][w] = 0;
-        }
-
-        else {
-            DP[0][w] = 0;
-            item_added[0][w] = -1;
-        }
-    }
-
-    // Fill out the rest of the table, row by row. 
-    for (int i = 1; i < n; i++) {
-        for (int w = 0; w <= capacity; w++) {
-            // Either keep the same set of items
-            int same_set_value = DP[i - 1][w];
-
-            // or add the i-th item to the set, if it doesn't weigh too much.
-            int with_new_item;
-            if (w - weights[i] < 0) {
-                with_new_item = -1;
-            }
-
-            else {
-                with_new_item = values[i] + DP[i - 1][w - weights[i]];
-            }
-
-            // Choose the one that gives the greatest value.
-            if (with_new_item > same_set_value) {
-                DP[i][w] = with_new_item;
-                item_added[i][w] = i;
-            }
-
-            else {
-                DP[i][w] = same_set_value;
-                item_added[i][w] = -1;
-            }
-        }
-    }
-
-    // Backtracking
-    int w = capacity;
-    for (int i = n - 1; i >= 0; i--) {
-        int item_num = item_added[i][w];
-
-        if (item_num != -1) {
-            // If an item was added here, add it to the list 
-            // and account for its weight to continue the search.
-            knapsack.push_back(item_num);
-            w -= weights[item_num];
-        }
-    }
-
-    return knapsack;
 }
 
 void update(int day, market *market, portfolio *portfolio) {
-    // Update stocks (prices, MA)
+    // Update all stocks (prices, MA)
     for (int i = 0; i < market_size; i++) {
         stock *s_p = &(market -> stocks[i]);
+
+        // Update price
         s_p -> curr_price = s_p -> prices[day];
         
         // Update moving averages efficiently
         float old_price;
         float new_price = s_p -> curr_price;
-        
-        old_price = s_p -> prices[day - 2];
-        s_p -> ma_2days = ((2 * s_p -> ma_2days) - old_price + new_price)/2;
 
         // In these cases have to check if we have to remove a value, or just calculate the
         // mean of all prices until now.
+        if (day > 2 - 1) {
+            old_price = s_p -> prices[day - 2];
+            s_p -> ma_2days = ((2 * s_p -> ma_2days) - old_price + new_price)/2;   
+        }
+
+        else {
+            s_p -> ma_2days = (s_p -> prices[0] + s_p -> curr_price) / 2;
+        }
+
         if (day > 7 - 1) {
             old_price = s_p -> prices[day - 7];
             s_p -> ma_7days = ((7 * s_p -> ma_7days) - old_price + new_price)/7;
@@ -358,90 +232,5 @@ void cheat_predict(int day, market *market) {
         stock *s_p = &(market -> stocks[i]);
 
         s_p -> tmr_price_est = s_p -> prices[day + 1];
-    }
-}
-
-#include <fstream>
-#include <sstream>
-std::string path = "market_data/";
-
-#include <dirent.h>
-std::vector<std::string> get_file_names() {
-    std::vector<std::string> file_names;
-
-    DIR *dir;
-    struct dirent *ent;
-    if ((dir = opendir ("./market_data/")) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            std::string curr_file_name = ent -> d_name;
-
-            // Check they aren't . or ..
-            if (!curr_file_name.compare(".") || !curr_file_name.compare("..")) {
-                continue;
-            }
-
-            file_names.push_back(curr_file_name);
-        }
-        closedir(dir);
-    }
-
-    else {
-        std::cerr << "couldn't open" << std::endl;
-    }
-
-    return file_names;
-}
-
-// Only read the adjusted close data for now.
-void readData(market *market) {
-    std::vector<std::string> file_names = get_file_names();
-    
-    int stock_idx = 0;
-    for (std::string file_name : file_names) {
-        std::ifstream file("market_data/" + file_name);
-
-        if (!file.is_open()) {
-            std::cerr << "File " + file_name + "couldn't be opened" << std::endl;
-        }
-
-        // Prepare to read data
-        stock curr;
-        curr.ticker = file_name.substr(0, file_name.length() - 4); // Need to cut the .CSV off
-        curr.id = stock_idx;
-        std::string line;
-
-        // Ignore the first line
-        std::getline(file, line);
-
-        // Read the rest of the lines
-        // Note that adjusted volume is column 5 (0-indexed)
-        float val;
-        int day_idx = 0;
-        while (std::getline(file, line)) {
-            std::stringstream ss(line);
-
-            int col = 0;
-            while (ss >> val) {
-                if (col == 5) {
-                    curr.prices[day_idx] = val;
-                    day_idx++;
-                }
-
-                // Ignore commas
-                if (ss.peek() == ',') {
-                    ss.ignore();
-                }
-
-                col++;
-            }
-        }
-
-        // Finalise
-        file.close();
-        curr.initial_price = curr.prices[0];
-        curr.curr_price = curr.initial_price;
-        curr.ma_2days, curr.ma_7days, curr.ma_14days, curr.ma_30days = curr.initial_price;
-        market -> stocks[stock_idx] = curr;
-        stock_idx++;
     }
 }
