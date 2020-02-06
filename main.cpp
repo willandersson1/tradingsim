@@ -66,7 +66,7 @@ int main() {
     market.update_total_value();
     
     struct portfolio portfolio;
-    portfolio.cash = 1000;
+    portfolio.cash = 300;
 
     // Let one day go by
     // TODO: roll this into the update function.
@@ -82,10 +82,8 @@ int main() {
 
     day++;
 
-    // Loop over all days,
+    // Loop over all days, up until the last one (needs special treatment).
     while (day < days - 2) {
-        // std::cout << "SOD cash: " << portfolio.cash << std::endl;
-
         // Update price to current day's, as well as MAs and totals.
         update(day, &market, &portfolio);
 
@@ -113,12 +111,8 @@ int main() {
 
         // Weight capacity:
         // The sum of all cash and current holdings. Round down.
-        int capacity = 0;
-        float temp = portfolio.cash;
-        for (holding h : portfolio.curr_holdings) {
-            temp += h.stock_ptr -> curr_price;
-        }
-        capacity = (int) std::floor(temp);
+        // Note all holdings are sold already, so we don't need to iterate over them.
+        int capacity = (int) std::floor(portfolio.cash);
 
         // Number of items: enough copies of each stock so that max capacity is less than
         // quantity * curr_price of the stock.
@@ -146,7 +140,7 @@ int main() {
         for (int i = 0; i < market_size; i++) {
             stock *s_p = &(market.stocks[i]);
             int price = (int) std::ceil(s_p -> curr_price);
-            int tmr_price_prediction = (int) std::ceil(s_p -> tmr_price_est);
+            int tmr_price_prediction = (int) std::floor(s_p -> tmr_price_est);
             int predicted_gain = tmr_price_prediction - price;
 
             int s_id = s_p -> id;
@@ -174,15 +168,21 @@ int main() {
             portfolio.curr_holdings.push_back(temp);
         }
 
-        std::cout << "EOD cash: " << portfolio.cash << std::endl;
-
         day++;
     }
 
-    // TODO: tally up cash after end of final day, ie the above loop should go to days - 1
+    //  After the last second last day, update everything and see how the program performed.
+    day++;
+    update(day, &market, &portfolio);
+    for (holding h : portfolio.curr_holdings) {
+        float value = h.stock_ptr -> curr_price;
+        portfolio.cash += value;
+        h.sell_price = value;
+        portfolio.past_holdings.push_back(h);
+    }
+    portfolio.curr_holdings = {};
 
-
-
+    std::cout << "After final day cash is " << portfolio.cash << std::endl;
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
@@ -219,6 +219,8 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // used.
     // item_added[i][j] = k <=> item k was added to the knapsack at DP[i][j]. 
     // Set to -1 else.
+    // Todo: probably don't need a whole array like this, can use a vector or some pairs.
+    // ^ will reduce memory usage.
     int item_added [n][capacity + 1];
     std::vector<int> knapsack;
 
