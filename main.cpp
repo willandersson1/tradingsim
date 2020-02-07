@@ -11,6 +11,94 @@
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
 const int market_size = 5; // TODO: calculate this by counting files
 
+// Stock declaration
+class Stock {
+    int id;
+    std::string ticker;
+    std::vector<float> prices;
+    float curr_price, initial_price, tmr_price_est;
+    float ma_2days, ma_7days, ma_14days, ma_30days;
+
+    public: 
+        void init(int, std::string, std::vector<float>);
+        void update(int);
+};
+
+// Stock definition
+void Stock::init(int x, std::string t, std::vector<float> p) {
+    id = x;
+    ticker = t;
+    prices = p;
+
+    curr_price = prices[0];
+    initial_price = prices[0];
+    tmr_price_est = 0;
+
+    ma_2days = curr_price;
+    ma_7days = curr_price;
+    ma_14days = curr_price;
+    ma_30days = curr_price;
+}
+
+void Stock::update(int d) {
+    // Update price
+    curr_price = prices[d];
+
+    // Update MAs efficiently
+    float old_price;
+    float new_price = curr_price;
+
+    // In these cases have to check if we have to remove a value, or just calculate the
+    // mean of all prices until now.
+    if (d > 2 - 1) {
+        old_price = prices[d - 2];
+        ma_2days = ((2 * ma_2days) - old_price + new_price)/2;   
+    }
+
+    else {
+        ma_2days = (prices[0] + curr_price) / 2;
+    }
+
+    if (d > 7 - 1) {
+        old_price = prices[d - 7];
+        ma_7days = ((7 * ma_7days) - old_price + new_price)/7;
+    }
+
+    else {
+        ma_7days = ((d * ma_7days) + new_price)/(d + 1);
+    }
+
+    if (d > 14 - 1) {
+        old_price = prices[d - 14];
+        ma_14days = ((14 * ma_14days) - old_price + new_price)/14;
+    }
+
+    else {
+        ma_14days = ((d * ma_14days) + new_price)/(d + 1);
+    }
+
+    if (d > 30 - 1) {
+        old_price = prices[d - 30];
+        ma_14days = ((30 * ma_14days) - old_price + new_price)/30;
+    }
+
+    else {
+        ma_30days = ((d * ma_30days) + new_price)/(d + 1);
+    }
+}
+
+class Market {
+    int size;
+    double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
+    std::vector<Stock> stocks;
+
+    public: 
+        void init(int);
+        void update_value();
+};
+
+
+
 struct stock {
     std::string ticker;
     int id;
@@ -26,7 +114,7 @@ struct stock {
 
 struct market {
     stock stocks [market_size];
-    // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
+    
     double total_value;
     void update_total_value() {
         double sum = 0.0;
