@@ -7,7 +7,7 @@
 #include <vector>
 #include <iostream>
 #include "market.h"
-std::string path = "market_data/";
-void readData(market *market);
+// std::string path = "market_data/";
+// void readData(market *market);
 
 #endif
