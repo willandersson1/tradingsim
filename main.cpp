@@ -19,9 +19,10 @@ class Stock {
         std::vector<float> prices;
         float curr_price, initial_price, tmr_price_est;
         float ma_2days, ma_7days, ma_14days, ma_30days;
-        
+
         Stock(int, std::string, std::vector<float>);
         void update(int);
+        std::string toString();
 };
 
 // Stock definition
@@ -121,6 +122,72 @@ void Market::cheat_predict(int d) {
     }
 }
 
+// Holding declaration
+class Holding {
+    public: 
+        Stock *stock_ptr;
+        float buy_price;
+        float sell_price;
+
+        Holding(Stock *);
+        void sell();
+};
+
+// Holding definition
+Holding::Holding(Stock *s) {
+    stock_ptr = s;
+    buy_price = s -> curr_price;
+}
+
+void Holding::sell() {
+    sell_price = stock_ptr -> curr_price;
+}
+
+// Portfolio declaration
+class Portfolio {
+    public: 
+        float cash;
+        std::vector<Holding> curr_holdings; // TODO: should be pointers to this?
+        std::vector<Holding> past_holdings;
+
+        Portfolio(float);
+        float get_curr_holdings_value();
+        void buy(Stock *);
+        void sellAll();
+};
+
+// Portfolio definition
+Portfolio::Portfolio(float initial_cash) {
+    cash = initial_cash;
+    curr_holdings = {};
+    past_holdings = {};
+}
+
+float Portfolio::get_curr_holdings_value() {
+    float sum = 0.0;
+    for (Holding h : curr_holdings) {
+        sum += h.stock_ptr -> curr_price;
+    }
+    return sum;
+}
+
+void Portfolio::buy(Stock *s) {
+    cash -= s -> curr_price;
+    curr_holdings.emplace_back(s);
+}
+
+void Portfolio::sellAll() {
+    for (Holding h : curr_holdings) {
+        h.sell();
+        cash += h.sell_price;
+        past_holdings.push_back(h);
+    }
+
+    curr_holdings = {};
+}
+
+
+
 
 
 struct stock {
@@ -167,10 +234,12 @@ void predict(int day, market *market);
 void cheat_predict(int day, market *market);
 void readData(market *market);
 
+std::vector<Stock> class_readData();
+
 
 int main() {
     // Initialise
-    // Stocks, initial market value, initial empty portfolio, ...
+    Market market(market_size, class_readData());
 
     struct market market;
     readData(&market);
@@ -406,6 +475,60 @@ std::vector<std::string> get_file_names() {
     }
 
     return file_names;
+}
+
+// Class version
+std::vector<Stock> class_readData() {
+    std::vector<Stock> stocks = {};
+
+    std::vector<std::string> file_names = get_file_names();
+    
+    int stock_idx = 0;
+    for (std::string file_name : file_names) {
+        std::ifstream file("market_data/" + file_name);
+
+        if (!file.is_open()) {
+            std::cerr << "File " + file_name + "couldn't be opened" << std::endl;
+        }
+
+        // Prepare to read data
+        std::string ticker = file_name.substr(0, file_name.length() - 4); // Need to cut the .CSV off
+        int id = stock_idx;
+        std::vector<float> prices = {};
+
+        std::string line;
+
+        // Ignore the first line
+        std::getline(file, line);
+
+        // Read the rest of the lines
+        // Note that adjusted volume is column 5 (0-indexed)
+        float val;
+        while (std::getline(file, line)) {
+            std::stringstream ss(line);
+
+            int col = 0;
+            while (ss >> val) {
+                if (col == 5) {
+                    prices.push_back(val);
+                }
+
+                // Ignore commas
+                if (ss.peek() == ',') {
+                    ss.ignore();
+                }
+
+                col++;
+            }
+        }
+
+        // Finalise
+        file.close();
+        stocks.emplace_back(id, ticker, prices);
+        stock_idx++;
+    }
+
+    return stocks;
 }
 
 // Only read the adjusted close data for now.
