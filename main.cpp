@@ -13,13 +13,12 @@ const int market_size = 5; // TODO: calculate this by counting files
 
 // Stock declaration
 class Stock {
-    int id;
-    std::string ticker;
-    std::vector<float> prices;
-    float curr_price, initial_price, tmr_price_est;
-    float ma_2days, ma_7days, ma_14days, ma_30days;
-
-    public: 
+    public:
+        int id;
+        std::string ticker;
+        std::vector<float> prices;
+        float curr_price, initial_price, tmr_price_est;
+        float ma_2days, ma_7days, ma_14days, ma_30days;
         void init(int, std::string, std::vector<float>);
         void update(int);
 };
@@ -87,15 +86,38 @@ void Stock::update(int d) {
     }
 }
 
+// Market declaration
 class Market {
-    int size;
-    double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
-    std::vector<Stock> stocks;
-
     public: 
-        void init(int);
-        void update_value();
+        int size;
+        double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
+        std::vector<Stock> stocks;
+        void init(int, std::vector<Stock>);
+        void update(int);
+        void cheat_predict(int);
 };
+
+// Market definition
+void Market::init(int sz, std::vector<Stock> s) {
+    size = sz;
+    stocks = s;
+    update(0);
+}
+
+void Market::update(int d) {
+    double sum = 0.0;
+    for (Stock s : stocks) {
+        s.update(d);
+        sum += s.curr_price;
+    }
+    value = sum;
+}
+
+void Market::cheat_predict(int d) {
+    for (Stock s : stocks) {
+        s.tmr_price_est = s.prices.at(d + 1);
+    }
+}
 
 
 
@@ -152,7 +174,7 @@ int main() {
     market.update_total_value();
     
     struct portfolio portfolio;
-    portfolio.cash = 300;
+    portfolio.cash = 200;
 
     // Let one day go by
     // TODO: roll this into the update function.
@@ -323,6 +345,7 @@ void update(int day, market *market, portfolio *portfolio) {
     portfolio -> holdings_value = sum;
 }
 
+// TODO: implement in class version
 void predict(int day, market *market) {
     // We now have updated MAs and can use it to predict the value of each stock 
     // (and holding in portfolio) the next day
