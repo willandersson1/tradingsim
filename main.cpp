@@ -117,8 +117,8 @@ void Market::update(int d) {
 }
 
 void Market::cheat_predict(int d) {
-    for (Stock s : stocks) {
-        s.tmr_price_est = s.prices.at(d + 1);
+    for (int i = 0; i < size; i++) {
+        stocks.at(i).tmr_price_est = stocks.at(i).prices.at(d + 1);
     }
 }
 
@@ -241,41 +241,25 @@ int main() {
     // Initialise
     Market market(market_size, class_readData());
     Portfolio portfolio(200);
-        // struct market market;
-        // readData(&market);
-        // market.update_total_value();
-    
-        // struct portfolio portfolio;
-        // portfolio.cash = 200;
 
     // Let one day go by
     int day = 1;
     market.update(day);
 
-        // update(day, &market, &portfolio);
-
     day++;
-    /*
 
     // Loop over all days, up until the last one (needs special treatment).
     while (day < days - 2) {
         // Update price to current day's, as well as MAs and totals.
-        update(day, &market, &portfolio);
+        market.update(day);
 
         // Analyse all stocks in the market.
-        // predict(day, &market);
-        cheat_predict(day, &market);
+        market.cheat_predict(day);
 
         // Sell all current holdings, storing them in past holdings.
-        for (holding h : portfolio.curr_holdings) {
-            float value = h.stock_ptr -> curr_price;
-            portfolio.cash += value;
-            h.sell_price = value;
-            portfolio.past_holdings.push_back(h);
-        }
-        portfolio.curr_holdings = {};
+        portfolio.sellAll();
 
-        // TODO: could optimise this using an optimising algorithm
+        // TODO: could optimise this using the optimising algorithm (divide capacity by a constant)
         // To find the optimal choice of stocks, we implement a solution for the knapsack 
         // problem. But first we need to determine and initialise the weights, values, and 
         // max weight as follows... 
@@ -296,12 +280,14 @@ int main() {
         int copies [market_size] = {0};
 
         for (int i = 0; i < market_size; i++) {
-            stock *s_p = &(market.stocks[i]);
+            Stock *s_p = &(market.stocks.at(i));
+
             int s_id = s_p -> id;
             copies[s_id] = (int) (std::ceil(capacity/(s_p -> curr_price)));
 
             num_items += copies[s_id];
         }
+        
         
         // Weight: the stock price. 
         // Values: the predicted gain tomorrow.
@@ -313,7 +299,8 @@ int main() {
         int counter = 0;
 
         for (int i = 0; i < market_size; i++) {
-            stock *s_p = &(market.stocks[i]);
+            Stock *s_p = &(market.stocks.at(i));
+            
             int price = (int) std::ceil(s_p -> curr_price);
             int tmr_price_prediction = (int) std::floor(s_p -> tmr_price_est);
             int predicted_gain = tmr_price_prediction - price;
@@ -329,18 +316,13 @@ int main() {
         }
 
         std::vector<int> item_nums = knapsack_solve(capacity, num_items, weights, values);
-
+        
         // Buy all the recommended stocks
         for (int item_num : item_nums) {
             int s_id = ids[item_num];
-            stock *s_p = &(market.stocks[s_id]);
-            float price = s_p -> curr_price;
 
-            portfolio.cash -= price;
-            holding temp;
-            temp.stock_ptr = s_p;
-            temp.buy_price = price;
-            portfolio.curr_holdings.push_back(temp);
+            Stock *s_p = &(market.stocks.at(s_id));
+            portfolio.buy(s_p);
         }
 
         day++;
@@ -348,18 +330,10 @@ int main() {
 
     //  After the last second last day, update everything and see how the program performed.
     day++;
-    update(day, &market, &portfolio);
-    for (holding h : portfolio.curr_holdings) {
-        float value = h.stock_ptr -> curr_price;
-        portfolio.cash += value;
-        h.sell_price = value;
-        portfolio.past_holdings.push_back(h);
-    }
-    portfolio.curr_holdings = {};
+    market.update(day);
+    portfolio.sellAll();
 
     std::cout << "After final day cash is " << portfolio.cash << std::endl;
-
-    */ 
 }
 
 void update(int day, market *market, portfolio *portfolio) {
