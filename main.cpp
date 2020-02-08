@@ -19,12 +19,13 @@ class Stock {
         std::vector<float> prices;
         float curr_price, initial_price, tmr_price_est;
         float ma_2days, ma_7days, ma_14days, ma_30days;
-        void init(int, std::string, std::vector<float>);
+        
+        Stock(int, std::string, std::vector<float>);
         void update(int);
 };
 
 // Stock definition
-void Stock::init(int x, std::string t, std::vector<float> p) {
+Stock::Stock(int x, std::string t, std::vector<float> p) {
     id = x;
     ticker = t;
     prices = p;
@@ -92,13 +93,14 @@ class Market {
         int size;
         double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
         std::vector<Stock> stocks;
-        void init(int, std::vector<Stock>);
+        
+        Market(int, std::vector<Stock>);
         void update(int);
         void cheat_predict(int);
 };
 
 // Market definition
-void Market::init(int sz, std::vector<Stock> s) {
+Market::Market(int sz, std::vector<Stock> s) {
     size = sz;
     stocks = s;
     update(0);
@@ -169,6 +171,7 @@ void readData(market *market);
 int main() {
     // Initialise
     // Stocks, initial market value, initial empty portfolio, ...
+
     struct market market;
     readData(&market);
     market.update_total_value();
