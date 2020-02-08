@@ -1,4 +1,4 @@
-#include "knapsack.h"
+#include "knapsack_solve.h"
 
 std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values []) {
     // Solve using DP, keep track of additional items used as well.

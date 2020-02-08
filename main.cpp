@@ -2,7 +2,15 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include "knapsack.h"
+
+#include "stock.h"
+#include "market.h"
+#include "holding.h"
+#include "portfolio.h"
+#include "get_file_names.h"
+#include "read_data.h"
+
+#include "knapsack_solve.h"
 #include "print_help.h"
 
 
@@ -10,184 +18,6 @@
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
 const int market_size = 5; // TODO: calculate this by counting files
-
-// Stock declaration
-class Stock {
-    public:
-        int id;
-        std::string ticker;
-        std::vector<float> prices;
-        float curr_price, initial_price, tmr_price_est;
-        float ma_2days, ma_7days, ma_14days, ma_30days;
-
-        Stock(int, std::string, std::vector<float>);
-        void update(int);
-        std::string toString();
-};
-
-// Stock definition
-Stock::Stock(int x, std::string t, std::vector<float> p) {
-    id = x;
-    ticker = t;
-    prices = p;
-
-    curr_price = prices[0];
-    initial_price = prices[0];
-    tmr_price_est = 0;
-
-    ma_2days = curr_price;
-    ma_7days = curr_price;
-    ma_14days = curr_price;
-    ma_30days = curr_price;
-}
-
-void Stock::update(int d) {
-    // Update price
-    curr_price = prices[d];
-
-    // Update MAs efficiently
-    float old_price;
-    float new_price = curr_price;
-
-    // In these cases have to check if we have to remove a value, or just calculate the
-    // mean of all prices until now.
-    if (d > 2 - 1) {
-        old_price = prices[d - 2];
-        ma_2days = ((2 * ma_2days) - old_price + new_price)/2;   
-    }
-
-    else {
-        ma_2days = (prices[0] + curr_price) / 2;
-    }
-
-    if (d > 7 - 1) {
-        old_price = prices[d - 7];
-        ma_7days = ((7 * ma_7days) - old_price + new_price)/7;
-    }
-
-    else {
-        ma_7days = ((d * ma_7days) + new_price)/(d + 1);
-    }
-
-    if (d > 14 - 1) {
-        old_price = prices[d - 14];
-        ma_14days = ((14 * ma_14days) - old_price + new_price)/14;
-    }
-
-    else {
-        ma_14days = ((d * ma_14days) + new_price)/(d + 1);
-    }
-
-    if (d > 30 - 1) {
-        old_price = prices[d - 30];
-        ma_14days = ((30 * ma_14days) - old_price + new_price)/30;
-    }
-
-    else {
-        ma_30days = ((d * ma_30days) + new_price)/(d + 1);
-    }
-}
-
-// Market declaration
-class Market {
-    public: 
-        int size;
-        double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
-        std::vector<Stock> stocks;
-        
-        Market(int, std::vector<Stock>);
-        void update(int);
-        void cheat_predict(int);
-};
-
-// Market definition
-Market::Market(int sz, std::vector<Stock> s) {
-    size = sz;
-    stocks = s;
-    update(0);
-}
-
-void Market::update(int d) {
-    double sum = 0.0;
-    for (int i = 0; i < size; i++) {
-        stocks.at(i).update(d);
-        sum += stocks.at(i).curr_price;
-    }
-    value = sum;
-}
-
-void Market::cheat_predict(int d) {
-    for (int i = 0; i < size; i++) {
-        stocks.at(i).tmr_price_est = stocks.at(i).prices.at(d + 1);
-    }
-}
-
-// Holding declaration
-class Holding {
-    public: 
-        Stock *stock_ptr;
-        float buy_price;
-        float sell_price;
-
-        Holding(Stock *);
-        void sell();
-};
-
-// Holding definition
-Holding::Holding(Stock *s) {
-    stock_ptr = s;
-    buy_price = s -> curr_price;
-}
-
-void Holding::sell() {
-    sell_price = stock_ptr -> curr_price;
-}
-
-// Portfolio declaration
-class Portfolio {
-    public: 
-        float cash;
-        std::vector<Holding> curr_holdings; // TODO: should be pointers to this?
-        std::vector<Holding> past_holdings;
-
-        Portfolio(float);
-        float get_curr_holdings_value();
-        void buy(Stock *);
-        void sellAll();
-};
-
-// Portfolio definition
-Portfolio::Portfolio(float initial_cash) {
-    cash = initial_cash;
-    curr_holdings = {};
-    past_holdings = {};
-}
-
-float Portfolio::get_curr_holdings_value() {
-    float sum = 0.0;
-    for (Holding h : curr_holdings) {
-        sum += h.stock_ptr -> curr_price;
-    }
-    return sum;
-}
-
-void Portfolio::buy(Stock *s) {
-    cash -= s -> curr_price;
-    curr_holdings.emplace_back(s);
-}
-
-void Portfolio::sellAll() {
-    for (Holding h : curr_holdings) {
-        h.sell();
-        cash += h.sell_price;
-        past_holdings.push_back(h);
-    }
-
-    curr_holdings = {};
-}
-
-std::vector<Stock> readData();
-
 
 int main() {
     // Initialise
@@ -240,7 +70,6 @@ int main() {
             num_items += copies[s_id];
         }
         
-        
         // Weight: the stock price. 
         // Values: the predicted gain tomorrow.
         // Both values need to be rounded up to integer values.
@@ -286,111 +115,4 @@ int main() {
     portfolio.sellAll();
 
     std::cout << "After final day cash is " << portfolio.cash << std::endl;
-}
-
-// TODO: implement in class version
-/*
-void predict(int day, market *market) {
-    // We now have updated MAs and can use it to predict the value of each stock 
-    // (and holding in portfolio) the next day
-
-    // Declare the coefficients for ma_2day, ma_7day, ... respectively.
-    // TODO: fix weights... this doesn't work: no positive gains are predicted!
-    // float weights [4] = {0.769231, 0.192308, 0, -0.384615};
-    float weights [4] = {0.25, 0.25, 0.25, 0.25};
-
-    for (int i = 0; i < market_size; i++) {
-        stock *s_p = &(market -> stocks[i]);
-
-        s_p -> tmr_price_est = weights[0] * s_p -> ma_2days + weights[1] * s_p -> ma_7days
-                        + weights[2] * s_p -> ma_14days + weights[3] * s_p -> ma_30days;
-    }
-}
-*/
-
-#include <fstream>
-#include <sstream>
-#include <dirent.h>
-#include <vector>
-#include <iostream>
-std::string path = "market_data/";
-
-std::vector<std::string> get_file_names() {
-    std::vector<std::string> file_names;
-
-    DIR *dir;
-    struct dirent *ent;
-    if ((dir = opendir ("./market_data/")) != NULL) {
-        while ((ent = readdir(dir)) != NULL) {
-            std::string curr_file_name = ent -> d_name;
-
-            // Check they aren't equal to . or ..
-            if (!curr_file_name.compare(".") || !curr_file_name.compare("..")) {
-                continue;
-            }
-
-            file_names.push_back(curr_file_name);
-        }
-        closedir(dir);
-    }
-
-    else {
-        std::cerr << "couldn't open" << std::endl;
-    }
-
-    return file_names;
-}
-
-// Only read adjusted close data for now.
-std::vector<Stock> readData() {
-    std::vector<Stock> stocks = {};
-
-    std::vector<std::string> file_names = get_file_names();
-    
-    int stock_idx = 0;
-    for (std::string file_name : file_names) {
-        std::ifstream file("market_data/" + file_name);
-
-        if (!file.is_open()) {
-            std::cerr << "File " + file_name + "couldn't be opened" << std::endl;
-        }
-
-        // Prepare to read data
-        std::string ticker = file_name.substr(0, file_name.length() - 4); // Need to cut the .CSV off
-        int id = stock_idx;
-        std::vector<float> prices = {};
-
-        std::string line;
-
-        // Ignore the first line
-        std::getline(file, line);
-
-        // Read the rest of the lines
-        // Note that adjusted volume is column 5 (0-indexed)
-        float val;
-        while (std::getline(file, line)) {
-            std::stringstream ss(line);
-
-            int col = 0;
-            while (ss >> val) {
-                if (col == 5) {
-                    prices.push_back(val);
-                }
-
-                // Ignore commas
-                if (ss.peek() == ',') {
-                    ss.ignore();
-                }
-
-                col++;
-            }
-        }
-
-        // Finalise
-        file.close();
-        stocks.emplace_back(id, ticker, prices);
-        stock_idx++;
-    }
-
-    return stocks;
 }
