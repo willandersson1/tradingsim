@@ -109,9 +109,9 @@ Market::Market(int sz, std::vector<Stock> s) {
 
 void Market::update(int d) {
     double sum = 0.0;
-    for (Stock s : stocks) {
-        s.update(d);
-        sum += s.curr_price;
+    for (int i = 0; i < size; i++) {
+        stocks.at(i).update(d);
+        sum += stocks.at(i).curr_price;
     }
     value = sum;
 }
@@ -240,20 +240,22 @@ std::vector<Stock> class_readData();
 int main() {
     // Initialise
     Market market(market_size, class_readData());
-
-    struct market market;
-    readData(&market);
-    market.update_total_value();
+    Portfolio portfolio(200);
+        // struct market market;
+        // readData(&market);
+        // market.update_total_value();
     
-    struct portfolio portfolio;
-    portfolio.cash = 200;
+        // struct portfolio portfolio;
+        // portfolio.cash = 200;
 
     // Let one day go by
-    // TODO: roll this into the update function.
     int day = 1;
-    update(day, &market, &portfolio);
+    market.update(day);
+
+        // update(day, &market, &portfolio);
 
     day++;
+    /*
 
     // Loop over all days, up until the last one (needs special treatment).
     while (day < days - 2) {
@@ -356,6 +358,8 @@ int main() {
     portfolio.curr_holdings = {};
 
     std::cout << "After final day cash is " << portfolio.cash << std::endl;
+
+    */ 
 }
 
 void update(int day, market *market, portfolio *portfolio) {
