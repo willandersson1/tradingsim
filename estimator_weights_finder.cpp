@@ -71,9 +71,22 @@ int main() {
         return w1 * m(d, 2) + w2 * m(d, 7) + w3 * m(d, 14) + w4 * m(d, 30);
     };
 
+    // Define error function
+    auto err = [prices] (int i, double tmr_pred) {
+        return std::abs(prices[i + 1] - tmr_pred);
+    };
+
+    // Define error in percentage price change function
+    auto perc_change_err = [prices] (int i, double tmr_pred) {
+        double actual_perc_change = (prices[i + 1] - prices[i])/prices[i];
+        double predicted_perc_change = (tmr_pred - prices[i])/prices[i];
+
+        return std::abs(actual_perc_change - predicted_perc_change);
+    };
+
     // Define the range of possible parameters for est
     int granularity = 13;
-    double start = -2.5;
+    double start = -1.5;
     double mid = 0.0;
     double end = -start;
     double increment = end/granularity;
@@ -106,11 +119,18 @@ int main() {
                         std::cout << count << std::endl;
                     }
 
+                    // Enforce that the weights must sum to over 1
+                    if (w1 + w2 + w3 + w4 < 1) {
+                        continue;
+                    }
+
                     // Find total error 
                     double curr_err = 0.0;
 
                     for (int i = 0; i < days; i++) {
-                        curr_err += std::abs(prices[i + 1] - est(i, w1, w2, w3, w4));
+                        double tmr_pred = est(i, w1, w2, w3, w4);
+                        
+                        curr_err += perc_change_err(i, tmr_pred);
 
                         // Slight optimisation
                         if (curr_err > lowest_err) {
