@@ -1,3 +1,8 @@
+To compile:
+- Compile each file with -c individually
+- run g++ main.o stock.o holding.o portfolio.o market.o knapsack_solve.o read_data.o get_file_names.o print_help.o
+
+
 Explanation of strategy
 Initially, attempted to simulate stock market with sin function: f(x) = 0.4 * sin(2 * pi * x/365) + (4/365*100) * x, p(x) = initial_price * f(x) + initial price with the idea that the stock market is cyclical (yearly) with max drawdown ~40%, but with inherent 4% annual growth. Decided before testing that this was both inaccurate and interesting to predict with MAs.
 
