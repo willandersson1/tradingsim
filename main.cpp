@@ -22,7 +22,7 @@ const int market_size = 5; // TODO: calculate this by counting files
 int main() {
     // Initialise
     Market market(market_size, readData());
-    Portfolio portfolio(200);
+    Portfolio portfolio(400);
 
     // Let one day go by
     int day = 1;
@@ -36,7 +36,10 @@ int main() {
         market.update(day);
 
         // Analyse all stocks in the market.
-        market.cheat_predict(day);
+        market.predict(day);
+
+        std::cout << "\n0 stock curr price: " << market.stocks.at(4).curr_price << std::endl;
+        std::cout << "0 stock tmr pred: " << market.stocks.at(4).tmr_price_est << std::endl;
 
         // Sell all current holdings, storing them in past holdings.
         portfolio.sellAll();

@@ -21,14 +21,11 @@ void Market::predict(int d) {
 
     // Declare the coefficients for ma_2day, ma_7day, ... respectively.
     // TODO: fix weights... this doesn't work: no positive gains are predicted!
-    // float weights [4] = {0.769231, 0.192308, 0, -0.384615};
-    float weights [4] = {0.25, 0.25, 0.25, 0.25};
+    float weights [4] = {0.769231, 0.192308, 0, -0.384615};
 
     for (int i = 0; i < size; i++) {
-        Stock *s_p = &(stocks.at(i));
-
-        s_p -> tmr_price_est = weights[0] * s_p -> ma_2days + weights[1] * s_p -> ma_7days
-                             + weights[2] * s_p -> ma_14days + weights[3] * s_p -> ma_30days;
+        stocks.at(i).tmr_price_est = weights[0] * stocks.at(i).ma_2days + weights[1] * stocks.at(i).ma_7days
+                             + weights[2] * stocks.at(i).ma_14days + weights[3] * stocks.at(i).ma_30days;
     }
 }
 
