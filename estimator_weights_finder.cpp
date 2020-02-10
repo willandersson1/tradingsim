@@ -99,8 +99,8 @@ int main() {
     };
 
     // Define the range of possible parameters for est
-    int granularity = 5;
-    double start = -4;
+    int granularity = 47;
+    double start = -1;
     double mid = 0.0;
     double end = -start;
     double increment = end/granularity;
@@ -161,14 +161,14 @@ int main() {
                     for (int i = 0; i < days - 1; i++) {
                         double tmr_pred = est(i, w1, w2, w3, w4);
 
-                        if (i > days - 3) {
-                        printf("%d \n Weights: %f, %f, %f, %f \n(curr) & MAs: (%f) %f %f %f %f \n => %f\n", i, 
-                                                                                    w1, w2, w3, w4, 
-                                                                                    prices[i],
-                                                                                    m(i, 2), m(i, 7), 
-                                                                                    m(i, 14), m(i, 30), tmr_pred);
+                        curr_err += err(i, tmr_pred);
+                        // curr_err += perc_change_err(i, tmr_pred);
+
+                        // Only accept reasonable predictions, so a 10% difference day to day
+                        double ratio = std::abs(tmr_pred/prices[i]);
+                        if (ratio < 0.9 || ratio > 1.1) {
+                            break;
                         }
-                        curr_err += perc_change_err(i, tmr_pred);
 
                         // Slight optimisation
                         if (curr_err > lowest_err) {
@@ -183,7 +183,6 @@ int main() {
                         best_weights[3] = w4;
                         lowest_err = curr_err;
                     }
-                    
                 }
             }
         }
