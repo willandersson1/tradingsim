@@ -93,13 +93,13 @@ int main() {
 
     // Define the gain, optimise based on this
     auto gain = [prices] (int i, double tmr_pred) {
-        std::cout << prices[i + 1] << " - " << tmr_pred << " = " << prices[i + 1] - tmr_pred << std::endl;
+        // std::cout << i << ": " << prices[i + 1] - tmr_pred << std::endl;
 
         return prices[i + 1] - tmr_pred;
     };
 
     // Define the range of possible parameters for est
-    int granularity = 47;
+    int granularity = 29;
     double start = -1;
     double mid = 0.0;
     double end = -start;
@@ -134,16 +134,23 @@ int main() {
                         // std::cout << count << std::endl;
                     }
 
-                    /*
+                    
                     // Find total gain
                     double curr_gain = 0.0;
 
                     for (int i = 0; i < days - 1; i++) {
                         double tmr_pred = est(i, w1, w2, w3, w4);
-                        std::cout << tmr_pred << std::endl;
+                        // std::cout << tmr_pred << std::endl;
+                        // Only accept reasonable predictions, so a 10% difference day to day
+                        double ratio = tmr_pred/prices[i];
+                        if (ratio < 0.9 || ratio > 1.1) {
+                            break;
+                        }
 
                         curr_gain += gain(i, tmr_pred);
                     }
+
+                    
 
                     if (curr_gain > largest_total_gain) {
                         best_weights[0] = w1;
@@ -152,20 +159,19 @@ int main() {
                         best_weights[3] = w4;
                         largest_total_gain = curr_gain;
                     }
-                    */
 
                     // Find total error 
-                    
+                    /*
                     double curr_err = 0.0;
 
                     for (int i = 0; i < days - 1; i++) {
                         double tmr_pred = est(i, w1, w2, w3, w4);
 
-                        curr_err += err(i, tmr_pred);
-                        // curr_err += perc_change_err(i, tmr_pred);
+                        // curr_err += err(i, tmr_pred);
+                        curr_err += perc_change_err(i, tmr_pred);
 
                         // Only accept reasonable predictions, so a 10% difference day to day
-                        double ratio = std::abs(tmr_pred/prices[i]);
+                        double ratio = tmr_pred/prices[i];
                         if (ratio < 0.9 || ratio > 1.1) {
                             break;
                         }
@@ -182,7 +188,7 @@ int main() {
                         best_weights[2] = w3;
                         best_weights[3] = w4;
                         lowest_err = curr_err;
-                    }
+                    } */
                 }
             }
         }
@@ -191,8 +197,8 @@ int main() {
     std::cout << "\n\n\n" << std::endl;
     std::cout << "Range: [" << start << ", " << end << "]" << std::endl;
     std::cout << "Granularity: " << granularity << std::endl;
-    // std::cout << "Largest total gain: " << largest_total_gain << std::endl;
-    std::cout << "Lowest err: " << lowest_err << std::endl;
+    std::cout << "Largest total gain: " << largest_total_gain << std::endl;
+    // std::cout << "Lowest err: " << lowest_err << std::endl;
     std::cout << "Weights: " << std::endl;
     for (double w : best_weights) {
         std::cout << w << std::endl;

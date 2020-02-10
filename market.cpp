@@ -20,9 +20,8 @@ void Market::predict(int d) {
     // (and holding in portfolio) the next day
 
     // Declare the coefficients for ma_2day, ma_7day, ... respectively.
-
-    float weights [4] = {1.5, 0, 0, -0.5};
-    
+    // Based on the brute force estimator technique.
+    float weights [4] = {0, 0.0425532, 0.489362, 0.574468};
 
     for (int i = 0; i < size; i++) {
         stocks.at(i).tmr_price_est = weights[0] * stocks.at(i).ma_2days + weights[1] * stocks.at(i).ma_7days
