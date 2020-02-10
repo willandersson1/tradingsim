@@ -17,7 +17,7 @@
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
 const int market_size = 5; // TODO: calculate this by counting files
-const int initial_cash = 2000;
+const int initial_cash = 2500; // Much more than this and the program will crash
 
 int main() {
     // Initialise

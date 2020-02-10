@@ -99,7 +99,7 @@ int main() {
     };
 
     // Define the range of possible parameters for est
-    int granularity = 29;
+    int granularity = 10;
     double start = -1;
     double mid = 0.0;
     double end = -start;
