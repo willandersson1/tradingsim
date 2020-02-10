@@ -1,53 +1,36 @@
-Range: [-10, 10]
-Granularity: 10
-Lowest err: 67448.8
-Weights: 
-3
--3
-2
--2
+No constraints, brute force
+    Range: [-2.5, 2.5]
+    Granularity: 13
+    Lowest err: 31043.5
+    Weights: 
+    0.769231
+    0.192308
+    0
+    -0.384615
 
-Range: [-4, 4]
-Granularity: 10
-Lowest err: 40802.6
-Weights: 
-1.2
-0
-0
--0.8
+    => 0% gain (predicted gains all < 0)
 
-Range: [-10, 10]
-Granularity: 11
-Lowest err: 80984.9
-Weights: 
-2.72727
--1.81818
-0
--0.909091
+With percentage change error tracking
+    Range: [-1, 1]
+    Granularity: 10
+    Lowest err: 5.59629
+    Weights: 
+    1
+    0
+    0
+    -0.5
 
-Range: [-4, 4]
-Granularity: 11
-Lowest err: 42968
-Weights: 
-1.45455
--0.363636
-0
--0.727273
+    => 0.32% gain
 
-Range: [-4, 4]
-Granularity: 12
-Lowest err: 33214.8
-Weights: 
-1.66667
--1
-0.666667
--1
+With percentage change error trackign, summing to at least 1
+    Range: [-1.5, 1.5]
+    Granularity: 13
+    Lowest err: 12.8276
+    Weights: 
+    -0.692308
+    1.5
+    -0.115385
+    0.
+    
+    => 0.08% gain. No improvement.
 
-Range: [-2.5, 2.5]
-Granularity: 13
-Lowest err: 31043.5
-Weights: 
-0.769231
-0.192308
-0
--0.384615

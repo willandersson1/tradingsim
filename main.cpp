@@ -9,7 +9,6 @@
 #include "portfolio.h"
 #include "get_file_names.h"
 #include "read_data.h"
-
 #include "knapsack_solve.h"
 #include "print_help.h"
 
@@ -18,11 +17,12 @@
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
 const int market_size = 5; // TODO: calculate this by counting files
+const int initial_cash = 2000;
 
 int main() {
     // Initialise
     Market market(market_size, readData());
-    Portfolio portfolio(400);
+    Portfolio portfolio(initial_cash);
 
     // Let one day go by
     int day = 1;
@@ -37,9 +37,6 @@ int main() {
 
         // Analyse all stocks in the market.
         market.predict(day);
-
-        std::cout << "\n0 stock curr price: " << market.stocks.at(4).curr_price << std::endl;
-        std::cout << "0 stock tmr pred: " << market.stocks.at(4).tmr_price_est << std::endl;
 
         // Sell all current holdings, storing them in past holdings.
         portfolio.sellAll();
@@ -117,5 +114,6 @@ int main() {
     market.update(day);
     portfolio.sellAll();
 
-    std::cout << "After final day cash is " << portfolio.cash << std::endl;
+    std::cout << "After final day cash is " << portfolio.cash << ", " 
+              << (portfolio.cash - initial_cash)/initial_cash << "% gain." << std::endl;
 }

@@ -84,9 +84,14 @@ int main() {
         return std::abs(actual_perc_change - predicted_perc_change);
     };
 
+    // Define the gain, optimise based on this
+    auto gain = [prices] (int i, double tmr_pred) {
+        return prices[i + 1] - tmr_pred;
+    };
+
     // Define the range of possible parameters for est
-    int granularity = 13;
-    double start = -1.5;
+    int granularity = 3;
+    double start = -5;
     double mid = 0.0;
     double end = -start;
     double increment = end/granularity;
@@ -107,6 +112,7 @@ int main() {
     vals.push_back(end);
 
     double lowest_err = 1e10; // large dummy value
+    double largest_total_gain = 0.0;
     double best_weights [4];
 
     unsigned long count = 0;
@@ -116,18 +122,32 @@ int main() {
                 for (double w4 : vals) {
                     count++;
                     if (count % 2500 == 0) {
-                        std::cout << count << std::endl;
+                        // std::cout << count << std::endl;
                     }
 
-                    // Enforce that the weights must sum to over 1
-                    if (w1 + w2 + w3 + w4 < 1) {
-                        continue;
+                    // Find total gain
+                    double curr_gain = 0.0;
+
+                    for (int i = 0; i < days - 1 - 245; i++) {
+                        double tmr_pred = est(i, w1, w2, w3, w4);
+
+                        std::cout << gain(i, tmr_pred) << std::endl;
+                        curr_gain += gain(i, tmr_pred);
+                    }
+
+                    if (curr_gain > largest_total_gain) {
+                        best_weights[0] = w1;
+                        best_weights[1] = w2;
+                        best_weights[2] = w3;
+                        best_weights[3] = w4;
+                        largest_total_gain = curr_gain;
                     }
 
                     // Find total error 
+                    /*
                     double curr_err = 0.0;
 
-                    for (int i = 0; i < days; i++) {
+                    for (int i = 0; i < days - 1; i++) {
                         double tmr_pred = est(i, w1, w2, w3, w4);
                         
                         curr_err += perc_change_err(i, tmr_pred);
@@ -145,6 +165,7 @@ int main() {
                         best_weights[3] = w4;
                         lowest_err = curr_err;
                     }
+                    */
                 }
             }
         }
@@ -153,7 +174,8 @@ int main() {
     std::cout << "\n\n\n" << std::endl;
     std::cout << "Range: [" << start << ", " << end << "]" << std::endl;
     std::cout << "Granularity: " << granularity << std::endl;
-    std::cout << "Lowest err: " << lowest_err << std::endl;
+    std::cout << "Largest total gain: " << largest_total_gain << std::endl;
+    // std::cout << "Lowest err: " << lowest_err << std::endl;
     std::cout << "Weights: " << std::endl;
     for (double w : best_weights) {
         std::cout << w << std::endl;
