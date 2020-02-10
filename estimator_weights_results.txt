@@ -1,36 +1,35 @@
 No constraints, brute force
-    Range: [-2.5, 2.5]
-    Granularity: 13
-    Lowest err: 31043.5
+    Range: [-1, 1]
+    Granularity: 47
+    Lowest err: 461.52
     Weights: 
-    0.769231
-    0.192308
     0
-    -0.384615
+    0.0425532
+    0.489362
+    0.574468
 
-    => 0% gain (predicted gains all < 0)
+    => 0.21% gain
 
 With percentage change error tracking
     Range: [-1, 1]
-    Granularity: 10
-    Lowest err: 5.59629
+    Granularity: 47
+    Lowest err: 0.105858
     Weights: 
+    0
+    0.0425532
+    0.489362
+    0.574468
+
+    => 0.21% gain (same weights!)
+
+With optimising for total gain over the whole time period: 
+    Range: [-1, 1]
+    Granularity: 20
+    Largest total gain: 140792
+    Weights: 
+    -0.7
+    0.8
+    -0.15
     1
-    0
-    0
-    -0.5
 
-    => 0.32% gain
-
-With percentage change error trackign, summing to at least 1
-    Range: [-1.5, 1.5]
-    Granularity: 13
-    Lowest err: 12.8276
-    Weights: 
-    -0.692308
-    1.5
-    -0.115385
-    0.
-    
-    => 0.08% gain. No improvement.
-
+    => 0.17% gain
