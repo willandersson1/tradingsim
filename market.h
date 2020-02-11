@@ -6,7 +6,7 @@
 class Market {
     public: 
         int size;
-        double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
+        double value;
         std::vector<Stock> stocks;
         
         Market(std::vector<Stock>);

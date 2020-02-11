@@ -12,8 +12,6 @@ std::vector<int> knapsack_solve(int capacity, int n, int weights [], int values 
     // used.
     // item_added[i][j] = k <=> item k was added to the knapsack at DP[i][j]. 
     // Set to -1 else.
-    // Todo: probably don't need a whole array like this, can use a vector or some pairs.
-    // ^ will reduce memory usage.
     int item_added [n][capacity + 1];
     std::vector<int> knapsack;
 

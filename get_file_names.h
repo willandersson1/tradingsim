@@ -6,8 +6,6 @@
 #include <dirent.h>
 #include <iostream>
 
-// std::string path;
-
 std::vector<std::string> get_file_names();
 
 #endif

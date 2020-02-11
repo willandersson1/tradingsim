@@ -17,7 +17,7 @@
 int main() {
     // Set initial parameters
     const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-    const int initial_cash = 2500; // Much more than this and the program will crash
+    const int initial_cash = 10; // Much more than this and the program will crash
 
     // Initialise
     Market market(readData(days));
@@ -40,7 +40,6 @@ int main() {
         // Sell all current holdings, storing them in past holdings.
         portfolio.sellAll();
 
-        // TODO: could optimise this using the optimising algorithm (divide capacity by a constant)
         // To find the optimal choice of stocks, we implement a solution for the knapsack 
         // problem. But first we need to determine and initialise the weights, values, and 
         // max weight as follows... 

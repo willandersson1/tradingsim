@@ -7,7 +7,7 @@
 class Portfolio {
     public: 
         float cash;
-        std::vector<Holding> curr_holdings; // TODO: should be pointers to this?
+        std::vector<Holding> curr_holdings;
         std::vector<Holding> past_holdings;
 
         Portfolio(float);

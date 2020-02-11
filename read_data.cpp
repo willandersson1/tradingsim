@@ -6,7 +6,7 @@ std::vector<Stock> readData(int days) {
 
     std::vector<std::string> file_names = get_file_names();
     
-    int stock_idx = 0;
+    int stock_index = 0;
     for (std::string file_name : file_names) {
         std::ifstream file("market_data/" + file_name);
 
@@ -16,7 +16,7 @@ std::vector<Stock> readData(int days) {
 
         // Prepare to read data
         std::string ticker = file_name.substr(0, file_name.length() - 4); // Need to cut the .CSV off
-        int id = stock_idx;
+        int id = stock_index;
         std::vector<float> prices = {};
 
         std::string line;
@@ -48,7 +48,7 @@ std::vector<Stock> readData(int days) {
         // Finalise
         file.close();
         stocks.emplace_back(id, ticker, prices);
-        stock_idx++;
+        stock_index++;
     }
 
     return stocks;

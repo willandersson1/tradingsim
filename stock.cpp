@@ -5,14 +5,10 @@ Stock::Stock(int x, std::string t, std::vector<float> p) {
     ticker = t;
     prices = p;
 
-    curr_price = prices[0];
-    initial_price = prices[0];
+    curr_price = initial_price = prices[0];
     tmr_price_est = 0;
 
-    ma_2days = curr_price;
-    ma_7days = curr_price;
-    ma_14days = curr_price;
-    ma_30days = curr_price;
+    ma_2days = ma_7days = ma_14days = ma_30days = curr_price;
 }
 
 void Stock::update(int d) {
