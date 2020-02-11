@@ -32,20 +32,18 @@ The biggest issue with the program is that the matrices created in the knapsack 
 The other limitation is the prediction strategy's poor performance. Perhaps after I learn more about finance and quantiative trading I will be able to create a more sophisticated strategy.
 
 ### Possible extensions
---* Multithreading, perhaps by splitting the computation of each row of the knapsack DP matrix up
---* Adding more data
---* Reading data and processing everything day by day, to reduce maximum memory usage
---* User requests a particular set of stocks, make HTTP web requests to get relevant data
---* See behaviour of different strategies on different sets of stocks
---* Graph portfolio value over time
+* Multithreading, perhaps by splitting the computation of each row of the knapsack DP matrix up
+* Adding more data
+* Reading data and processing everything day by day, to reduce maximum memory usage
+* User requests a particular set of stocks, make HTTP web requests to get relevant data
+* See behaviour of different strategies on different sets of stocks
+* Graph portfolio value over time
 
 ### How to use
+* Compiling: 
 
+  Compile each ```cpp``` file individually (eg: ```g++ -c main.cpp```), then run ```g++ main.o stock.o holding.o portfolio.o market.o knapsack_solve.o read_data.o get_file_names.o print_help.o```. In both these steps, ```print_help``` is not necessary.
 
-To compile:
-- Compile each file with -c individually
-- run g++ main.o stock.o holding.o portfolio.o market.o knapsack_solve.o read_data.o get_file_names.o print_help.o
+* Adding stocks: 
 
-
-
-
+  Find the historical daily price data 31.01.2019 - 31.01.2020 from Yahoo finance and download the ```csv```. Add the file to ```market_data```.
