@@ -25,7 +25,7 @@ void Market::predict(int d) {
 
     for (int i = 0; i < size; i++) {
         stocks.at(i).tmr_price_est = weights[0] * stocks.at(i).ma_2days + weights[1] * stocks.at(i).ma_7days
-                             + weights[2] * stocks.at(i).ma_14days + weights[3] * stocks.at(i).ma_30days;
+                                   + weights[2] * stocks.at(i).ma_14days + weights[3] * stocks.at(i).ma_30days;
     }
 }
 
