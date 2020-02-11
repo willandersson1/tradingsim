@@ -32,7 +32,12 @@ The biggest issue with the program is that the matrices created in the knapsack 
 The other limitation is the prediction strategy's poor performance. Perhaps after I learn more about finance and quantiative trading I will be able to create a more sophisticated strategy.
 
 ### Possible extensions
-
+--* Multithreading, perhaps by splitting the computation of each row of the knapsack DP matrix up
+--* Adding more data
+--* Reading data and processing everything day by day, to reduce maximum memory usage
+--* User requests a particular set of stocks, make HTTP web requests to get relevant data
+--* See behaviour of different strategies on different sets of stocks
+--* Graph portfolio value over time
 
 ### How to use
 
@@ -44,4 +49,3 @@ To compile:
 
 
 
-There are flaws: I have no funademental economic or finance arguments to support my final weight choices. Furthermore, I am unsure to what extent the initial price of the stock affects the accuracy. But for now I will continue with these to finish my program and perhaps revisit the strategy later.
