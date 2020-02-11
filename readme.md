@@ -1,3 +1,21 @@
+### Overview
+This program attempts to trade five different stocks over the course of a year to make profit. The strategy (explained in detail below) is trained on two years' worth of old SP500 price data, then is applied to the moving averages on the stocks to be traded. A dynamic programming algorithm is used to find the optimal trades for each day, while the data is read from CSV files into appropriate objects. In the end, the program outputs the profit made. 
+
+### Motivation
+I am interested in (qunatitative) finance and was curious to see if I could make a rudimentary trading algorithm. The previous semester I had been informally exposed to the basics of C++, so I thought this would be a good challenge to sharpen my skills. I also decided to develop the program on a Unix OS (Ubuntu) and publish it on with Git to become familiar with common tools in industry.
+
+### Trading strategy
+
+
+### Limitations
+
+
+### Possible extensions
+
+
+### How to use
+
+
 To compile:
 - Compile each file with -c individually
 - run g++ main.o stock.o holding.o portfolio.o market.o knapsack_solve.o read_data.o get_file_names.o print_help.o
