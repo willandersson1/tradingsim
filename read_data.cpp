@@ -1,7 +1,8 @@
 #include "read_data.h"
 
-std::vector<Stock> readData() {
-    std::vector<Stock> stocks = {};
+std::vector<Stock> readData(int days) {
+    std::vector<Stock> stocks;
+    stocks.reserve(days);
 
     std::vector<std::string> file_names = get_file_names();
     

@@ -13,14 +13,14 @@
 #include "print_help.h"
 
 
-// TODO: These should be marked as global or w/e, and then as extern when
-// the structs are move to diff files.
-const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-const int initial_cash = 2500; // Much more than this and the program will crash
 
 int main() {
+    // Set initial parameters
+    const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
+    const int initial_cash = 2500; // Much more than this and the program will crash
+
     // Initialise
-    Market market(readData());
+    Market market(readData(days));
     Portfolio portfolio(initial_cash);
 
     // Let one day go by

@@ -9,6 +9,6 @@
 #include "stock.h"
 #include "get_file_names.h"
 
-std::vector<Stock> readData();
+std::vector<Stock> readData(int);
 
 #endif
