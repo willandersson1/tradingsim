@@ -32,8 +32,7 @@ The biggest issue with the program is that the matrices created in the knapsack 
 The other limitation is the prediction strategy's poor performance. Perhaps after I learn more about finance and quantiative trading I will be able to create a more sophisticated strategy.
 
 ### Possible extensions
-* Multithreading, perhaps by splitting the computation of each row of the knapsack DP matrix up
-* Adding more data
+* Multithreading, perhaps by splitting up the computation of each row of the knapsack DP matrix
 * Reading data and processing everything day by day, to reduce maximum memory usage
 * User requests a particular set of stocks, make HTTP web requests to get relevant data
 * See behaviour of different strategies on different sets of stocks
