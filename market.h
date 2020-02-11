@@ -9,7 +9,7 @@ class Market {
         double value; // TODO: this doesn't actually make much sense. Not weighted by # shares. Do by avg % gain?
         std::vector<Stock> stocks;
         
-        Market(int, std::vector<Stock>);
+        Market(std::vector<Stock>);
         void update(int);
         void predict(int);
         void cheat_predict(int);

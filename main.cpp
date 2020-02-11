@@ -16,12 +16,11 @@
 // TODO: These should be marked as global or w/e, and then as extern when
 // the structs are move to diff files.
 const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-const int market_size = 5; // TODO: calculate this by counting files
 const int initial_cash = 2500; // Much more than this and the program will crash
 
 int main() {
     // Initialise
-    Market market(market_size, readData());
+    Market market(readData());
     Portfolio portfolio(initial_cash);
 
     // Let one day go by
@@ -59,9 +58,9 @@ int main() {
         // quantity * curr_price of the stock.
         // copies: track the number of copies of each stock we store. 
         int num_items = 0;
-        int copies [market_size] = {0};
+        int copies [market.size] = {0};
 
-        for (int i = 0; i < market_size; i++) {
+        for (int i = 0; i < market.size; i++) {
             Stock *s_p = &(market.stocks.at(i));
 
             int s_id = s_p -> id;
@@ -79,7 +78,7 @@ int main() {
         int ids [num_items];
         int counter = 0;
 
-        for (int i = 0; i < market_size; i++) {
+        for (int i = 0; i < market.size; i++) {
             Stock *s_p = &(market.stocks.at(i));
             
             int price = (int) std::ceil(s_p -> curr_price);

@@ -1,7 +1,7 @@
 #include "market.h"
 
-Market::Market(int sz, std::vector<Stock> s) {
-    size = sz;
+Market::Market(std::vector<Stock> s) {
+    size = s.size();
     stocks = s;
     update(0);
 }
