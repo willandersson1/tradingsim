@@ -2,6 +2,7 @@
 #define HOLDING_H
 
 #include "stock.h"
+
 class Holding {
     public: 
         Stock *stock_ptr;

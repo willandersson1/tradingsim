@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+
 class Stock {
     public:
         int id;

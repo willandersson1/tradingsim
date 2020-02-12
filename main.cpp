@@ -3,20 +3,21 @@
 #include <vector>
 #include <math.h>
 
-#include "stock.h"
-#include "market.h"
-#include "holding.h"
-#include "portfolio.h"
-#include "get_file_names.h"
-#include "read_data.h"
-#include "knapsack_solve.h"
-#include "print_help.h"
+#include "core_code/headers/stock.h"
+#include "core_code/headers/market.h"
+#include "core_code/headers/holding.h"
+#include "core_code/headers/portfolio.h"
+#include "core_code/headers/get_file_names.h"
+#include "core_code/headers/read_data.h"
+#include "core_code/headers/knapsack_solve.h"
+
+#include "helper_code/headers/print_help.h"
 
 
 int main() {
     // Set initial parameters
     const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-    const int initial_cash = 2300; // Much more than this and the program will crash
+    const int initial_cash = 2000; // Much more than this and the program will crash
 
     // Initialise
     Market market(readData(days));

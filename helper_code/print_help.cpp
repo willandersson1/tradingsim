@@ -1,4 +1,4 @@
-#include "print_help.h"
+#include "headers/print_help.h"
 
 void printArr(int n, int A []) {
     for (int i = 0; i < n - 1; i++) {

@@ -1,4 +1,4 @@
-#include "market.h"
+#include "headers/market.h"
 
 Market::Market(std::vector<Stock> s) {
     size = s.size();

@@ -1,4 +1,4 @@
-#include "holding.h"
+#include "headers/holding.h"
 
 Holding::Holding(Stock *s) {
     stock_ptr = s;

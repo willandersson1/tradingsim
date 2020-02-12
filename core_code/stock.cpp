@@ -1,4 +1,4 @@
-#include "stock.h"
+#include "headers/stock.h"
 
 Stock::Stock(int x, std::string t, std::vector<float> p) {
     id = x;

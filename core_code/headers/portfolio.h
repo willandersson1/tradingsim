@@ -2,8 +2,10 @@
 #define PORTFOLIO_H
 
 #include <vector>
+
 #include "holding.h"
 #include "stock.h"
+
 class Portfolio {
     public: 
         float cash;

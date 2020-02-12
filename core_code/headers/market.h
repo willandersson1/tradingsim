@@ -2,7 +2,9 @@
 #define MARKET_H
 
 #include <vector>
+
 #include "stock.h"
+
 class Market {
     public: 
         int size;
