@@ -12,7 +12,7 @@ std::vector<std::string> get_file_names() {
             std::string curr_file_name = dir_entered_ptr -> d_name;
             
             // Add only if the file names are not . or ..
-            if (curr_file_name.compare(".") || curr_file_name.compare("..")) {
+            if (curr_file_name.compare(".") && curr_file_name.compare("..")) {
                 file_names.push_back(curr_file_name);
             }
 
