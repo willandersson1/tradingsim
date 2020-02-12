@@ -41,7 +41,7 @@ The other limitation is the prediction strategy's poor performance. Perhaps afte
 ### How to use
 * Compiling: 
 
-  Compile each ```cpp``` file individually (eg: ```g++ -c main.cpp```), then run ```g++ main.o stock.o holding.o portfolio.o market.o knapsack_solve.o read_data.o get_file_names.o print_help.o```. In both these steps, ```print_help``` is not necessary.
+  Run ```g++ -g main.cpp stock.cpp holding.cpp portfolio.cpp market.cpp knapsack_solve.cpp read_data.cpp get_file_names.cpp print_help.cpp```. ```print_help``` is not necessary, but might be useful.
 
 * Adding stocks: 
 
