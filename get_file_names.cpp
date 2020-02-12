@@ -11,12 +11,12 @@ std::vector<std::string> get_file_names() {
         while (dir_entered_ptr != NULL) {
             std::string curr_file_name = dir_entered_ptr -> d_name;
             
-            // Check they aren't equal to . or ..
-            if (!curr_file_name.compare(".") || !curr_file_name.compare("..")) {
-                continue;
+            // Add only if the file names are not . or ..
+            if (curr_file_name.compare(".") || curr_file_name.compare("..")) {
+                file_names.push_back(curr_file_name);
             }
 
-            file_names.push_back(curr_file_name);
+            dir_entered_ptr = readdir(dir_ptr);
         }
         closedir(dir_ptr);
     }
