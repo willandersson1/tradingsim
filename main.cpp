@@ -13,11 +13,10 @@
 #include "print_help.h"
 
 
-
 int main() {
     // Set initial parameters
     const int days = 252; // equal to the # rows in each csv doc. Currently 31.01.2019 - 31.01.2020 inclusive.
-    const int initial_cash = 10; // Much more than this and the program will crash
+    const int initial_cash = 2300; // Much more than this and the program will crash
 
     // Initialise
     Market market(readData(days));
