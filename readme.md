@@ -41,7 +41,7 @@ The other limitation is the prediction strategy's poor performance. Perhaps afte
 ### How to use
 * Compiling: 
 
-  Run ```g++ -g main.cpp stock.cpp holding.cpp portfolio.cpp market.cpp knapsack_solve.cpp read_data.cpp get_file_names.cpp print_help.cpp```. ```print_help``` is not necessary, but might be useful.
+  Run ```g++ main.cpp stock.cpp holding.cpp portfolio.cpp market.cpp knapsack_solve.cpp read_data.cpp get_file_names.cpp print_help.cpp -o main```. ```print_help``` is not necessary, but might be useful. To run the compiled binary, execute ```./main``` in your shell.
 
 * Adding stocks: 
 
