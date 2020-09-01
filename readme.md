@@ -9,7 +9,7 @@ Due to the simplicity, I decided to devise a trading strategy based on moving av
 
 <img src="http://latex.codecogs.com/svg.latex?\text{prediction}=w_1*\text{MA}_2+w_2*\text{MA}_{7}+w_3*\text{MA}_{14}+w_4*\text{MA}_{30}" border="0"/>
 
-The challenge is then to find weights that enable accurate predictions. The code in ```estimator_weights_finder.cpp``` iterates over all possible combinations (with some restrictions) uses attempts to predict two years of daily SP500 price data. Overlap in dates with the stocks the program trades was avoided. This is a difficult computation, but keeping the next day prediction within 10% of the current day's price optimises the process hugely.
+The challenge is then to find weights that enable accurate predictions. The code in ```estimator_weights_finder.cpp``` iterates over all possible combinations of weights (with some restrictions) to predict two years of daily SP500 price data. There is no overlap in dates with the SP500 data and the stocks the program "trades", since this would create a perfect strategy. This brute force approach is inefficient, but keeping the next day prediction within 10% of the current day's price speeds it up hugely.
 
 The current weights were found by minimising total error, equal to the sum of prediction errors for each day. As it turns out, this produces the exact same weights as minimising the percentage error each day. These weights lead to a 0.21% gain in the main program. See ```estimator_weights_results.txt``` for more details.
 
