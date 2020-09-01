@@ -1,5 +1,5 @@
 ### Overview
-This program attempts to trade five different stocks over the course of a year to make profit. The strategy (explained in detail below) is trained on two years' worth of old SP500 price data, then is applied to the moving averages on the stocks to be traded. A dynamic programming algorithm is used to find the optimal trades for each day, while the data is read from CSV files into appropriate objects. In the end, the program outputs the profit made. 
+This program attempts to trade five different stocks over the course of a year to make profit. The strategy (explained in detail below) is trained on two years' worth of old SP500 price data, then applied to the moving averages on the stocks to be traded. A dynamic programming algorithm is used to find the optimal trades for each day, while the data is read from CSV files into appropriate objects. In the end, the program outputs the profit made. 
 
 ### Motivation
 I am interested in (quantitative) finance and was curious to see if I could make a rudimentary trading algorithm. The previous semester I had been informally exposed to the basics of C++, so I thought this would be a good challenge to sharpen my skills. The fact that we are not expected to do large programming projects in my course added to the appeal. I also decided to develop the program on a Unix OS (Ubuntu) and publish it on with Git to become familiar with common tools in industry, neither of which I had prior experience with. 
@@ -29,7 +29,7 @@ Because the knapsack solver takes in a finite list of items, then picks a subset
 ### Limitations
 The biggest issue with the program is that the matrices created in the knapsack solver are proportional in size to the initial cash multiplied by the number of items. As a result, including too many stocks to trade or beginning with a large amount of cash can easily deplete memory. This could perhaps be mitigated by approximating the solver with one that divides each item's value (as well as the total capacity) by a constant. 
 
-The other limitation is the prediction strategy's poor performance. Perhaps after I learn more about finance and quantitative trading, I will be able to create a more sophisticated strategy.
+The other limitation is the strategy's poor performance. Perhaps after I learn more about finance and quantitative trading, I will be able to improve it.
 
 ### Possible extensions
 * Multithreading, perhaps by splitting up the computation of each row of the knapsack DP matrix
