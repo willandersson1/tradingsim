@@ -1,5 +1,5 @@
 ### Overview
-This program attempts to trade five different stocks over the course of a year to make profit. The strategy (explained in detail below) is trained on two years' worth of old SP500 price data, then applied to the moving averages on the stocks to be traded. A dynamic programming algorithm is used to find the optimal trades for each day, while the data is read from CSV files into appropriate objects. In the end, the program outputs the profit made. 
+This program attempts to trade five different stocks over the course of a year to make profit, starting with $2000. The strategy (explained in detail below) is trained on two years' worth of old SP500 price data, then applied to the moving averages on the stocks to be traded. A dynamic programming algorithm is used to find the optimal trades for each day, while the data is read from CSV files into appropriate objects. In the end, the program outputs the profit made. 
 
 ### Motivation
 I am interested in (quantitative) finance and was curious to see if I could make a rudimentary trading algorithm. The previous semester I had been informally exposed to the basics of C++, so I thought this would be a good challenge to sharpen my skills. The fact that we are not expected to do large programming projects in my course added to the appeal. I also decided to develop the program on a Unix OS (Ubuntu) and publish it on with Git to become familiar with common tools in industry, neither of which I had prior experience with. 
@@ -39,16 +39,19 @@ The other limitation is the strategy's poor performance. Perhaps after I learn m
 * Graph portfolio value over time
 
 ### How to use
-* Compiling: 
+Begin by cloning this project and entering the ```tradingsim``` directory.
 
-  ```cd``` to ```/tradingsim```. Run the following code: 
+* Compile and run: 
+  Install ```cmake``` and ```gcc``` by running ```sudo apt-get install cmake gcc``` on Ubuntu.
 
-  
-  ```g++ main.cpp core_code/stock.cpp core_code/holding.cpp core_code/portfolio.cpp core_code/market.cpp core_code/knapsack_solve.cpp core_code/read_data.cpp core_code/get_file_names.cpp helper_code/print_help.cpp -o main```
+  Create a build folder: ```mkdir build && cd build```.
 
-  ```print_help``` is not necessary, but might be useful. 
-  To run the compiled binary, execute ```./main``` in your shell.
+  Compile the program: ```cmake .. && make```.
 
-* Adding stocks: 
+  Run the program: ```./tradingsim```. It will output how much money was made.
+
+  Compiling the estimator program is left as an exercise to the reader.
+
+* Add stocks: 
 
   Find the historical daily price data 31.01.2019 - 31.01.2020 from Yahoo finance and download the ```csv```. Add the file to ```market_data```.
