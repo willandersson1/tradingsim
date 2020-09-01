@@ -8,10 +8,10 @@ std::vector<Stock> readData(int days) {
     
     int stock_index = 0;
     for (std::string file_name : file_names) {
-        std::ifstream file("market_data/" + file_name);
+        std::ifstream file("../market_data/" + file_name);
 
         if (!file.is_open()) {
-            std::cerr << "File " + file_name + "couldn't be opened" << std::endl;
+            std::cerr << "File " + file_name + " couldn't be opened" << std::endl;
         }
 
         // Prepare to read data

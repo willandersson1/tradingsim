@@ -3,7 +3,7 @@
 std::vector<std::string> get_file_names() {
     std::vector<std::string> file_names;
 
-    DIR *dir_ptr = opendir("./market_data/");
+    DIR *dir_ptr = opendir("../market_data/");
     struct dirent *dir_entered_ptr;
     if (dir_ptr != NULL) {
         dir_entered_ptr = readdir(dir_ptr);
